@@ -166,8 +166,13 @@ app.post('/upload/save', async (req, res) => {
     if (!url || !name) {
       return res.status(400).json(reply(1, '缺少 url 或 name'))
     }
-    await addRecord({ url, thumbnailUrl: thumbnailUrl || '', name, size: size || 0, type: type || 'image/png' })
-    res.json(reply(0, '保存成功'))
+    try {
+      await addRecord({ url, thumbnailUrl: thumbnailUrl || '', name, size: size || 0, type: type || 'image/png' })
+    } catch (saveErr: any) {
+      _log('upload/save record failed (non-blocking): ' + saveErr.message)
+      return res.json(reply(0, '记录保存失败，但文件已上传', { saved: false, warning: saveErr.message }))
+    }
+    res.json(reply(0, '保存成功', { saved: true }))
   } catch (e: any) {
     _log('upload/save error: ' + e.message)
     res.status(500).json(reply(1, '保存记录失败', { message: e.message }))

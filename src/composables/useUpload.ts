@@ -446,23 +446,21 @@ export function useUpload() {
       const mainUrl = baseUrl + '/img-api/' + mediaPath
       console.log('[Upload] Main URL:', mainUrl)
 
-      const saveRes = await fetch(`${API_BASE}/upload/save`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          url: mainUrl,
-          thumbnailUrl: thumbnailUrl || '',
-          name: safeFileName,
-          size: uploadFile.size,
-          type: uploadFile.type,
-        }),
-      })
-
-      console.log('[Upload] Save response status:', saveRes.status)
-
-      if (!saveRes.ok) {
-        const data = await saveRes.json().catch(() => ({}))
-        throw new Error(data.msg || '保存记录失败')
+      try {
+        const saveRes = await fetch(`${API_BASE}/upload/save`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: mainUrl,
+            thumbnailUrl: thumbnailUrl || '',
+            name: safeFileName,
+            size: uploadFile.size,
+            type: uploadFile.type,
+          }),
+        })
+        console.log('[Upload] Save response status:', saveRes.status)
+      } catch (saveErr) {
+        console.warn('[Upload] Save record failed (non-blocking):', saveErr)
       }
 
       progress.value = 100
