@@ -7,10 +7,6 @@ interface Props {
   name: string
   size: number
   type: string
-  compressionRatio?: number
-  originalSize?: number
-  width?: number
-  height?: number
   hasThumbnail?: boolean
   thumbnailUrl?: string
   thumbnailWidth?: number
@@ -50,14 +46,6 @@ async function handleCopy(type: string) {
       <p class="font-medium text-text-primary truncate">{{ name }}</p>
       <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mt-1">
         <p>{{ formatFileSize(size) }} · {{ type }}</p>
-        <p v-if="width && height">{{ width }}x{{ height }}</p>
-        <p v-if="compressionRatio !== undefined && compressionRatio > 0" class="text-green-500">
-          压缩率 {{ compressionRatio.toFixed(1) }}%
-        </p>
-      </div>
-
-      <div v-if="originalSize && originalSize !== size" class="mt-1 text-xs text-text-secondary/60">
-        原始 {{ formatFileSize(originalSize) }} → 压缩后 {{ formatFileSize(size) }}
       </div>
 
       <div v-if="hasThumbnail && thumbnailUrl" class="mt-3 rounded-lg border border-border/50 px-3 py-2">

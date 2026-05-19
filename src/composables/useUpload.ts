@@ -6,10 +6,6 @@ export interface UploadResult {
   name: string
   size: number
   type: string
-  compressionRatio?: number
-  width?: number
-  height?: number
-  originalSize?: number
   hasThumbnail?: boolean
   thumbnailWidth?: number
   thumbnailHeight?: number
@@ -17,19 +13,10 @@ export interface UploadResult {
 }
 
 export interface UploadOptions {
-  quality?: number
-  maxWidth?: number
-  maxHeight?: number
   generateThumbnail?: boolean
   thumbnailMaxWidth?: number
   thumbnailMaxHeight?: number
   thumbnailQuality?: number
-}
-
-interface CompressResult {
-  compressedFile: File
-  width: number
-  height: number
 }
 
 interface ThumbnailResult {
@@ -59,98 +46,6 @@ function isVideo(file: File): boolean {
   const videoExts = ['mp4', 'mov', 'mkv', 'webm', 'm4v', '3gp']
   const ext = file.name.toLowerCase().split('.').pop() || ''
   return videoExts.includes(ext)
-}
-
-async function compressImageToWebp(
-  file: File,
-  quality: number = 0.7,
-  maxWidth: number = 0,
-  maxHeight: number = 0,
-): Promise<CompressResult> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.readAsDataURL(file)
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      const img = new Image()
-      img.src = e.target?.result as string
-      img.onload = async () => {
-        let width = img.width
-        let height = img.height
-
-        if (maxWidth > 0 || maxHeight > 0) {
-          if (maxWidth > 0 && maxHeight > 0) {
-            const ratio = Math.min(maxWidth / width, maxHeight / height)
-            if (ratio < 1) {
-              width = Math.round(width * ratio)
-              height = Math.round(height * ratio)
-            }
-          } else if (maxWidth > 0 && width > maxWidth) {
-            const ratio = maxWidth / width
-            width = maxWidth
-            height = Math.round(height * ratio)
-          } else if (maxHeight > 0 && height > maxHeight) {
-            const ratio = maxHeight / height
-            height = maxHeight
-            width = Math.round(width * ratio)
-          }
-        }
-
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
-
-        if (!ctx) {
-          reject(new Error('无法获取 canvas context'))
-          return
-        }
-
-        canvas.width = width
-        canvas.height = height
-        ctx.drawImage(img, 0, 0, width, height)
-
-        const originalSize = file.size
-        const pixelCount = width * height
-        let effectiveQuality = quality
-
-        if (pixelCount > 4_000_000) {
-          effectiveQuality = Math.min(quality, 0.5)
-        } else if (pixelCount > 2_000_000) {
-          effectiveQuality = Math.min(quality, 0.55)
-        } else if (pixelCount > 1_000_000) {
-          effectiveQuality = Math.min(quality, 0.6)
-        }
-
-        const tryCompress = (q: number, attempt: number): void => {
-          canvas.toBlob(
-            (blob) => {
-              if (!blob) {
-                reject(new Error('WebP 转换失败'))
-                return
-              }
-
-              if (blob.size > originalSize && attempt < 4) {
-                const nextQuality = Math.max(0.1, q - 0.15)
-                tryCompress(nextQuality, attempt + 1)
-                return
-              }
-
-              const compressedFile = new File(
-                [blob],
-                file.name.replace(/\.\w+$/, '.webp'),
-                { type: 'image/webp' },
-              )
-              resolve({ compressedFile, width, height })
-            },
-            'image/webp',
-            q,
-          )
-        }
-
-        tryCompress(effectiveQuality, 1)
-      }
-      img.onerror = () => reject(new Error('图片加载失败'))
-    }
-    reader.onerror = () => reject(new Error('文件读取失败'))
-  })
 }
 
 async function generateThumbnailImage(
@@ -270,9 +165,6 @@ export function useUpload() {
     options: UploadOptions = {},
   ): Promise<UploadResult | null> {
     const {
-      quality = 0.7,
-      maxWidth = 2048,
-      maxHeight = 2048,
       generateThumbnail = false,
       thumbnailMaxWidth = 400,
       thumbnailMaxHeight = 800,
@@ -284,38 +176,23 @@ export function useUpload() {
     error.value = ''
 
     try {
-      let uploadFile = file
-      let compressionRatio = 0
-      let imageWidth = 0
-      let imageHeight = 0
       let thumbResult: ThumbnailResult | null = null
 
       if (isImageFile(file)) {
-        processing.value = true
-        try {
-          const { compressedFile, width, height } = await compressImageToWebp(
-            file,
-            quality,
-            maxWidth,
-            maxHeight,
-          )
-          compressionRatio = ((file.size - compressedFile.size) / file.size) * 100
-          uploadFile = compressedFile
-          imageWidth = width
-          imageHeight = height
-
-          if (generateThumbnail) {
+        if (generateThumbnail) {
+          processing.value = true
+          try {
             thumbResult = await generateThumbnailImage(
-              compressedFile,
+              file,
               thumbnailMaxWidth,
               thumbnailMaxHeight,
               thumbnailQuality,
             )
+          } catch (thumbErr) {
+            console.warn('缩略图生成失败:', thumbErr)
+          } finally {
+            processing.value = false
           }
-        } catch (compressErr) {
-          console.warn('图片压缩失败，使用原文件上传:', compressErr)
-        } finally {
-          processing.value = false
         }
       }
 
@@ -324,13 +201,13 @@ export function useUpload() {
       console.log('[Upload] Step 1: Getting signature...')
       console.log(
         '[Upload] File:',
-        uploadFile.name,
-        (uploadFile.size / 1024).toFixed(1) + 'KB',
-        uploadFile.type,
+        file.name,
+        (file.size / 1024).toFixed(1) + 'KB',
+        file.type,
       )
 
       const signRes = await fetch(
-        `${API_BASE}/upload/sign?name=${encodeURIComponent(uploadFile.name)}&size=${uploadFile.size}&type=${encodeURIComponent(uploadFile.type || 'image/png')}`,
+        `${API_BASE}/upload/sign?name=${encodeURIComponent(file.name)}&size=${file.size}&type=${encodeURIComponent(file.type || 'image/png')}`,
         { method: 'GET' },
       )
 
@@ -362,7 +239,7 @@ export function useUpload() {
       const putRes = await fetch(upload_url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/octet-stream' },
-        body: uploadFile,
+        body: file,
       })
 
       console.log('[Upload] PUT response status:', putRes.status)
@@ -379,7 +256,7 @@ export function useUpload() {
 
       if (thumbResult) {
         console.log('[Upload] Step 3: Uploading image thumbnail...')
-        const thumbName = uploadFile.name.replace(/\.\w+$/, '_thumb.webp')
+        const thumbName = file.name.replace(/\.\w+$/, '_thumb.webp')
         const thumbSignRes = await fetch(
           `${API_BASE}/upload/sign?name=${encodeURIComponent(thumbName)}&size=${thumbResult.thumbnailFile.size}&type=image/webp`,
           { method: 'GET' },
@@ -468,12 +345,8 @@ export function useUpload() {
         url: mainUrl,
         thumbnailUrl: thumbnailUrl || undefined,
         name: file.name,
-        size: uploadFile.size,
-        type: uploadFile.type,
-        compressionRatio: isImageFile(file) ? compressionRatio : undefined,
-        width: imageWidth || undefined,
-        height: imageHeight || undefined,
-        originalSize: isImageFile(file) ? file.size : undefined,
+        size: file.size,
+        type: file.type,
         hasThumbnail: !!thumbResult,
         thumbnailWidth: thumbResult?.width,
         thumbnailHeight: thumbResult?.height,
