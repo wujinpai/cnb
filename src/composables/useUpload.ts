@@ -107,47 +107,45 @@ async function compressImageToWebp(
         canvas.height = height
         ctx.drawImage(img, 0, 0, width, height)
 
+        const originalSize = file.size
         const pixelCount = width * height
         let effectiveQuality = quality
+
         if (pixelCount > 4_000_000) {
-          effectiveQuality = Math.min(quality, 0.6)
+          effectiveQuality = Math.min(quality, 0.5)
         } else if (pixelCount > 2_000_000) {
-          effectiveQuality = Math.min(quality, 0.65)
+          effectiveQuality = Math.min(quality, 0.55)
+        } else if (pixelCount > 1_000_000) {
+          effectiveQuality = Math.min(quality, 0.6)
         }
 
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              reject(new Error('WebP 转换失败'))
-              return
-            }
-            if (blob.size > 3 * 1024 * 1024 && effectiveQuality > 0.3) {
-              canvas.toBlob(
-                (retryBlob) => {
-                  if (!retryBlob) {
-                    reject(new Error('WebP 转换失败'))
-                    return
-                  }
-                  const compressedFile = new File(
-                    [retryBlob],
-                    file.name.replace(/\.\w+$/, '.webp'),
-                    { type: 'image/webp' },
-                  )
-                  resolve({ compressedFile, width, height })
-                },
-                'image/webp',
-                0.3,
+        const tryCompress = (q: number, attempt: number): void => {
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('WebP 转换失败'))
+                return
+              }
+
+              if (blob.size > originalSize && attempt < 4) {
+                const nextQuality = Math.max(0.1, q - 0.15)
+                tryCompress(nextQuality, attempt + 1)
+                return
+              }
+
+              const compressedFile = new File(
+                [blob],
+                file.name.replace(/\.\w+$/, '.webp'),
+                { type: 'image/webp' },
               )
-              return
-            }
-            const compressedFile = new File([blob], file.name.replace(/\.\w+$/, '.webp'), {
-              type: 'image/webp',
-            })
-            resolve({ compressedFile, width, height })
-          },
-          'image/webp',
-          effectiveQuality,
-        )
+              resolve({ compressedFile, width, height })
+            },
+            'image/webp',
+            q,
+          )
+        }
+
+        tryCompress(effectiveQuality, 1)
       }
       img.onerror = () => reject(new Error('图片加载失败'))
     }
@@ -273,12 +271,12 @@ export function useUpload() {
   ): Promise<UploadResult | null> {
     const {
       quality = 0.7,
-      maxWidth = 0,
-      maxHeight = 0,
+      maxWidth = 2048,
+      maxHeight = 2048,
       generateThumbnail = false,
       thumbnailMaxWidth = 400,
       thumbnailMaxHeight = 800,
-      thumbnailQuality = 0.8,
+      thumbnailQuality = 0.6,
     } = options
 
     uploading.value = true
