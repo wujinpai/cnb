@@ -329,8 +329,8 @@ export function useUpload() {
             url: mainUrl,
             thumbnailUrl: thumbnailUrl || '',
             name: safeFileName,
-            size: uploadFile.size,
-            type: uploadFile.type,
+            size: file.size,
+            type: file.type,
           }),
         })
         console.log('[Upload] Save response status:', saveRes.status)
