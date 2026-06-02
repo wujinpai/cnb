@@ -11,20 +11,16 @@ const uploadedFiles = ref<UploadResult[]>([])
 const uploadQueue = ref<File[]>([])
 const currentUploadIndex = ref(0)
 
-const quality = ref(0.7)
 const generateThumbnail = ref(false)
 
 async function handleFiles(files: File[]) {
   if (files.length === 0) return
 
   const options: UploadOptions = {
-    quality: quality.value,
-    maxWidth: 5000,
-    maxHeight: 5000,
     generateThumbnail: generateThumbnail.value,
     thumbnailMaxWidth: 400,
     thumbnailMaxHeight: 800,
-    thumbnailQuality: 0.8,
+    thumbnailQuality: 0.6,
   }
 
   uploadQueue.value = files
@@ -55,25 +51,6 @@ function getUploadProgress() {
 
     <main class="max-w-3xl mx-auto px-4 py-8">
       <div class="space-y-4 rounded-xl border border-border bg-surface p-5">
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <label class="text-xs text-text-secondary">压缩质量</label>
-            <span class="text-xs tabular-nums text-text-primary/70">{{ Math.round(quality * 100) }}%</span>
-          </div>
-          <input
-            type="range"
-            v-model.number="quality"
-            :min="0.1"
-            :max="1"
-            :step="0.05"
-            class="quality-slider"
-          />
-          <div class="flex justify-between text-[10px] text-text-secondary/50">
-            <span>低质量·小体积</span>
-            <span>高质量·大体积</span>
-          </div>
-        </div>
-
         <div class="flex items-center justify-between">
           <label for="thumbnail-toggle" class="text-xs text-text-secondary">生成缩略图</label>
           <button
@@ -154,36 +131,4 @@ function getUploadProgress() {
 </template>
 
 <style scoped>
-.quality-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--surface-elevated, #f5f5f5);
-  outline: none;
-  cursor: pointer;
-}
-
-.quality-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--accent, #2563eb);
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-.quality-slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--accent, #2563eb);
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
 </style>
