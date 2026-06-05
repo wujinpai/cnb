@@ -54,10 +54,8 @@ function handleInputChange(e: Event) {
 <template>
   <div
     :class="[
-      'relative border-2 border-dashed rounded-2xl p-12 text-center transition-all cursor-pointer',
-      isDragging
-        ? 'border-accent bg-accent/5'
-        : 'border-border hover:border-accent/50 hover:bg-surface-elevated'
+      'relative border-2 border-dashed rounded-3xl p-16 text-center transition-all cursor-pointer upload-dropzone glass-card',
+      isDragging ? 'dragging' : ''
     ]"
     @dragover="handleDragOver"
     @dragleave="handleDragLeave"
@@ -73,15 +71,18 @@ function handleInputChange(e: Event) {
         @change="handleInputChange"
       />
 
-    <div class="flex flex-col items-center gap-4">
+    <div class="flex flex-col items-center gap-6">
       <div
         :class="[
-          'w-16 h-16 rounded-2xl flex items-center justify-center transition',
-          isDragging ? 'bg-accent/20' : 'bg-surface-elevated'
+          'w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-300',
+          isDragging ? 'bg-accent/20 scale-110' : 'bg-surface-elevated'
         ]"
       >
         <svg
-          class="w-8 h-8 text-text-secondary"
+          :class="[
+            'w-10 h-10 transition-all duration-300',
+            isDragging ? 'text-accent scale-110' : 'text-text-secondary'
+          ]"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -96,14 +97,14 @@ function handleInputChange(e: Event) {
       </div>
 
       <div>
-          <p class="text-text-primary font-medium">
-            {{ isDragging ? '松开以上传' : '拖拽图片或视频到此处' }}
+          <p class="text-text-primary font-semibold text-lg">
+            {{ isDragging ? '✨ 松开以上传' : '拖拽图片或视频到此处' }}
           </p>
-          <p class="text-text-secondary text-sm mt-1">或点击选择文件（支持多选）</p>
+          <p class="text-text-secondary text-sm mt-2">或点击选择文件（支持多选）</p>
         </div>
 
-      <p class="text-text-secondary text-xs">
-        支持 jpg, png, gif, webp, mp4, mov · 最大 50MB
+      <p class="text-text-secondary text-sm font-medium">
+        支持 jpg, png, gif, webp, mp4, mov · 最大 <span class="gradient-text font-bold">50MB</span>
       </p>
     </div>
   </div>

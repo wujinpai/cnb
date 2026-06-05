@@ -19,7 +19,8 @@ async function uploadToCnb({
 }) {
   const type = getUploadType(fileName)
   const safeFileName = sanitizeFileName(fileName)
-  const metaUrl = `https://api.cnb.cool/${process.env.SLUG_IMG}/-/upload/${type}`
+  const slugImg = process.env.SLUG_IMG || 'wujinpai/cnbimg'
+  const metaUrl = `https://api.cnb.cool/${slugImg}/-/upload/${type}`
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 60000)
@@ -69,7 +70,8 @@ async function signUpload({
 }) {
   const type = getUploadType(fileName)
   const safeFileName = sanitizeFileName(fileName)
-  const metaUrl = `https://api.cnb.cool/${process.env.SLUG_IMG}/-/upload/${type}`
+  const slugImg = process.env.SLUG_IMG || 'wujinpai/cnbimg'
+  const metaUrl = `https://api.cnb.cool/${slugImg}/-/upload/${type}`
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 60000)
@@ -97,4 +99,4 @@ async function signUpload({
   }
 }
 
-export { uploadToCnb, signUpload }
+export { uploadToCnb, signUpload, getUploadType }

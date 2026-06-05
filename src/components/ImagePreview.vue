@@ -68,14 +68,14 @@ onUnmounted(() => {
 <template>
   <Teleport to="body">
     <div
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl"
       @click.self="emit('close')"
     >
       <button
         @click="emit('close')"
-        class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition z-10"
+        class="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 z-10"
       >
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
@@ -83,9 +83,9 @@ onUnmounted(() => {
       <button
         v-if="hasPrev"
         @click="emit('prev')"
-        class="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition z-10"
+        class="absolute left-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 z-10"
       >
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
@@ -93,14 +93,14 @@ onUnmounted(() => {
       <button
         v-if="hasNext"
         @click="emit('next')"
-        class="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition z-10"
+        class="absolute right-6 top-1/2 -translate-y-1/2 w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300 hover:scale-110 z-10"
       >
-        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
-      <div class="max-w-5xl max-h-[85vh] mx-4">
+      <div class="max-w-6xl max-h-[85vh] mx-4">
         <video
           v-if="isVideo(image)"
           ref="videoRef"
@@ -109,63 +109,63 @@ onUnmounted(() => {
           controls
           preload="metadata"
           playsinline
-          class="max-w-full max-h-[75vh] rounded-lg bg-black"
+          class="max-w-full max-h-[75vh] rounded-2xl bg-black shadow-2xl"
         />
         <img
           v-else
           :src="image.url"
           :alt="image.name"
-          class="max-w-full max-h-[75vh] object-contain rounded-lg"
+          class="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
         />
       </div>
 
-      <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
-        <div class="max-w-3xl mx-auto">
-          <h3 class="text-white font-medium truncate">{{ image.name }}</h3>
-          <p class="text-white/60 text-sm mt-1">
-            {{ formatFileSize(image.size) }} · {{ formatDate(image.createdAt) }}
+      <div class="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+        <div class="max-w-4xl mx-auto">
+          <h3 class="text-white font-bold text-xl truncate">{{ image.name }}</h3>
+          <p class="text-white/70 text-sm mt-2">
+            📦 {{ formatFileSize(image.size) }} · 📅 {{ formatDate(image.createdAt) }}
           </p>
 
-          <div class="flex items-center gap-3 mt-4 flex-wrap">
+          <div class="flex items-center gap-3 mt-5 flex-wrap">
             <button
               @click="handleCopy('link')"
               :class="[
-                'px-4 py-2 rounded-lg text-sm font-medium transition',
+                'px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
                 copiedType === 'link'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
               ]"
             >
-              {{ copiedType === 'link' ? '已复制' : '链接' }}
+              {{ copiedType === 'link' ? '✓ 已复制' : '🔗 链接' }}
             </button>
             <button
               @click="handleCopy('markdown')"
               :class="[
-                'px-4 py-2 rounded-lg text-sm font-medium transition',
+                'px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
                 copiedType === 'markdown'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
               ]"
             >
-              {{ copiedType === 'markdown' ? '已复制' : 'Markdown' }}
+              {{ copiedType === 'markdown' ? '✓ 已复制' : '📝 Markdown' }}
             </button>
             <button
               @click="handleCopy('html')"
               :class="[
-                'px-4 py-2 rounded-lg text-sm font-medium transition',
+                'px-5 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
                 copiedType === 'html'
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white/10 text-white hover:bg-white/20'
+                  ? 'bg-green-500 text-white shadow-lg'
+                  : 'bg-white/10 text-white hover:bg-white/20 hover:scale-105'
               ]"
             >
-              {{ copiedType === 'html' ? '已复制' : 'HTML' }}
+              {{ copiedType === 'html' ? '✓ 已复制' : '🌐 HTML' }}
             </button>
 
             <button
               @click="emit('delete', image.id)"
-              class="px-4 py-2 rounded-lg text-sm font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition"
+              class="px-5 py-3 rounded-xl text-sm font-semibold bg-red-500/20 text-red-300 hover:bg-red-500/30 transition-all duration-300 hover:scale-105 border border-red-500/30"
             >
-              删除
+              🗑️ 删除
             </button>
           </div>
         </div>

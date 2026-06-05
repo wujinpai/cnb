@@ -4,22 +4,28 @@
 
 :root {
   --bg: #ffffff;
-  --surface: #fafafa;
-  --surface-elevated: #f5f5f5;
-  --border: #e5e5e5;
-  --text-primary: #171717;
-  --text-secondary: #737373;
-  --accent: #2563eb;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-elevated: rgba(255, 255, 255, 0.9);
+  --border: rgba(148, 163, 184, 0.2);
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --accent: #6366f1;
+  --accent-light: #818cf8;
+  --gradient-start: #667eea;
+  --gradient-end: #764ba2;
 }
 
 .dark {
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --surface-elevated: #242424;
-  --border: #333333;
-  --text-primary: #ffffff;
-  --text-secondary: #9ca3af;
-  --accent: #60a5fa;
+  --bg: #0f172a;
+  --surface: rgba(30, 41, 59, 0.8);
+  --surface-elevated: rgba(51, 65, 85, 0.9);
+  --border: rgba(71, 85, 105, 0.4);
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --accent: #818cf8;
+  --accent-light: #a5b4fc;
+  --gradient-start: #4f46e5;
+  --gradient-end: #7c3aed;
 }
 
 * {
@@ -30,9 +36,149 @@
 
 html, body {
   height: 100%;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 #app {
   height: 100%;
+}
+
+.gradient-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  background: linear-gradient(
+    135deg,
+    var(--gradient-start) 0%,
+    var(--gradient-end) 25%,
+    #f093fb 50%,
+    #f5576c 75%,
+    var(--gradient-start) 100%
+  );
+  background-size: 400% 400%;
+  animation: gradientFlow 15s ease infinite;
+  opacity: 0.15;
+}
+
+.gradient-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+    circle at 20% 80%,
+    rgba(120, 119, 198, 0.3) 0%,
+    transparent 50%
+  ), radial-gradient(
+    circle at 80% 20%,
+    rgba(255, 119, 198, 0.3) 0%,
+    transparent 50%
+  ), radial-gradient(
+    circle at 40% 40%,
+    rgba(99, 102, 241, 0.2) 0%,
+    transparent 50%
+  );
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes gradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.glass-card {
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card-elevated {
+  background: var(--surface-elevated);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  background-size: 200% 200%;
+  animation: gradientMove 3s ease infinite;
+  transition: all 0.3s ease;
+}
+
+.gradient-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+}
+
+@keyframes gradientMove {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.upload-dropzone {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(124, 58, 237, 0.05));
+  border: 2px dashed rgba(99, 102, 241, 0.3);
+  transition: all 0.3s ease;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone.dragging {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(124, 58, 237, 0.1));
+  border-color: var(--accent);
+  transform: scale(1.02);
+}
+
+.upload-dropzone.dragging {
+  border-style: solid;
+}
+
+::selection {
+  background: var(--accent);
+  color: white;
 }

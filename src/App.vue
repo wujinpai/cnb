@@ -15,5 +15,8 @@ watch(
 </script>
 
 <template>
-  <RouterView />
+  <div class="min-h-screen">
+    <div class="gradient-bg"></div>
+    <RouterView />
+  </div>
 </template>

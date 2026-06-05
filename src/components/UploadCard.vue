@@ -33,7 +33,7 @@ async function handleCopy(type: string) {
 </script>
 
 <template>
-  <div class="bg-surface border border-border rounded-xl overflow-hidden">
+  <div class="glass-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.01]">
     <div class="aspect-video bg-surface-elevated flex items-center justify-center">
       <img
         :src="url"
@@ -42,67 +42,67 @@ async function handleCopy(type: string) {
       />
     </div>
 
-    <div class="p-4">
-      <p class="font-medium text-text-primary truncate">{{ name }}</p>
-      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mt-1">
-        <p>{{ formatFileSize(size) }} · {{ type }}</p>
+    <div class="p-5">
+      <p class="font-semibold text-text-primary truncate text-lg">{{ name }}</p>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-text-secondary mt-2">
+        <p>📦 {{ formatFileSize(size) }} · {{ type }}</p>
       </div>
 
-      <div v-if="hasThumbnail && thumbnailUrl" class="mt-3 rounded-lg border border-border/50 px-3 py-2">
-        <p class="text-xs text-text-secondary mb-1.5">缩略图</p>
-        <div class="flex items-center gap-3">
+      <div v-if="hasThumbnail && thumbnailUrl" class="mt-4 glass-card-elevated rounded-xl px-4 py-3">
+        <p class="text-xs text-text-secondary mb-2 font-medium">缩略图</p>
+        <div class="flex items-center gap-4">
           <img
             :src="thumbnailUrl"
             alt="缩略图"
-            class="h-10 w-10 rounded border border-border/30 object-cover"
+            class="h-12 w-12 rounded-xl border border-border/30 object-cover shadow"
           />
-          <div class="flex gap-4 text-xs text-text-secondary">
+          <div class="flex gap-6 text-xs text-text-secondary">
             <p v-if="thumbnailWidth && thumbnailHeight">
-              尺寸 <span class="text-text-primary/70">{{ thumbnailWidth }}x{{ thumbnailHeight }}</span>
+              尺寸 <span class="gradient-text font-bold">{{ thumbnailWidth }}x{{ thumbnailHeight }}</span>
             </p>
             <p v-if="thumbnailSize">
-              大小 <span class="text-text-primary/70">{{ formatFileSize(thumbnailSize) }}</span>
+              大小 <span class="gradient-text font-bold">{{ formatFileSize(thumbnailSize) }}</span>
             </p>
           </div>
         </div>
       </div>
 
-      <div class="mt-3 flex items-center gap-2 flex-wrap">
-        <div class="flex-1 px-3 py-2 bg-surface-elevated rounded-lg text-sm text-text-secondary truncate">
+      <div class="mt-4 flex items-center gap-2 flex-wrap">
+        <div class="flex-1 px-4 py-3 bg-surface-elevated rounded-xl text-sm text-text-secondary truncate font-mono">
           {{ url }}
         </div>
         <button
           @click="handleCopy('link')"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            'px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
             copiedType === 'link'
-              ? 'bg-green-500/10 text-green-500'
-              : 'bg-accent text-white hover:bg-accent/90'
+              ? 'bg-green-500/20 text-green-500 border border-green-500/30'
+              : 'gradient-btn text-white'
           ]"
         >
-          {{ copiedType === 'link' ? '✓' : '链接' }}
+          {{ copiedType === 'link' ? '✓ 已复制' : '🔗 链接' }}
         </button>
         <button
           @click="handleCopy('markdown')"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            'px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
             copiedType === 'markdown'
-              ? 'bg-green-500/10 text-green-500'
-              : 'bg-accent text-white hover:bg-accent/90'
+              ? 'bg-green-500/20 text-green-500 border border-green-500/30'
+              : 'gradient-btn text-white'
           ]"
         >
-          {{ copiedType === 'markdown' ? '✓' : 'Markdown' }}
+          {{ copiedType === 'markdown' ? '✓ 已复制' : '📝 Markdown' }}
         </button>
         <button
           @click="handleCopy('html')"
           :class="[
-            'px-3 py-2 rounded-lg text-sm font-medium transition',
+            'px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300',
             copiedType === 'html'
-              ? 'bg-green-500/10 text-green-500'
-              : 'bg-accent text-white hover:bg-accent/90'
+              ? 'bg-green-500/20 text-green-500 border border-green-500/30'
+              : 'gradient-btn text-white'
           ]"
         >
-          {{ copiedType === 'html' ? '✓' : 'HTML' }}
+          {{ copiedType === 'html' ? '✓ 已复制' : '🌐 HTML' }}
         </button>
       </div>
     </div>
