@@ -1,3 +1,17 @@
 {
+  "server": {
+    "framework": "express",
+    "entry": "./node-functions/api/index.ts"
+  },
+  "routing": [
+    {
+      "route": "/api/*",
+      "target": "./node-functions/api"
+    },
+    {
+      "route": "/img-api/*",
+      "target": "./edge-functions/img-api"
+    }
+  ],
   "outputDirectory": "./dist"
 }
