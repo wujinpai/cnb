@@ -16,26 +16,20 @@ export function isVideo(file: ImageRecord): boolean {
   return ['mp4', 'mov', 'avi', 'mkv', 'webm', 'm4v', '3gp'].includes(ext)
 }
 
-const API_BASE = '/api'
+const STORAGE_KEY = 'uploaded_images'
 
 export function useImages() {
   const images = ref<ImageRecord[]>([])
   const loading = ref(false)
   const error = ref('')
 
-  async function fetchImages() {
+  function fetchImages() {
     loading.value = true
     error.value = ''
 
     try {
-      const res = await fetch(`${API_BASE}/records`)
-      const data = await res.json()
-
-      if (data.code === 0) {
-        images.value = data.data || []
-      } else {
-        throw new Error(data.msg || '获取图片列表失败')
-      }
+      const stored = localStorage.getItem(STORAGE_KEY)
+      images.value = stored ? JSON.parse(stored) : []
     } catch (e) {
       error.value = e instanceof Error ? e.message : '获取图片列表失败'
     } finally {
@@ -43,20 +37,20 @@ export function useImages() {
     }
   }
 
-  async function deleteImage(id: string) {
-    try {
-      const res = await fetch(`${API_BASE}/records/${id}`, { method: 'DELETE' })
-      const data = await res.json()
-
-      if (data.code === 0) {
-        images.value = images.value.filter(img => img.id !== id)
-        return true
-      }
-      throw new Error(data.msg || '删除失败')
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : '删除失败'
-      return false
+  function saveImage(record: Omit<ImageRecord, 'id' | 'createdAt'>) {
+    const newRecord: ImageRecord = {
+      ...record,
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      createdAt: new Date().toISOString(),
     }
+    images.value.unshift(newRecord)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(images.value))
+  }
+
+  function deleteImage(id: string) {
+    images.value = images.value.filter(img => img.id !== id)
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(images.value))
+    return true
   }
 
   return {
@@ -64,6 +58,7 @@ export function useImages() {
     loading,
     error,
     fetchImages,
+    saveImage,
     deleteImage
   }
 }

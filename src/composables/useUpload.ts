@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { useImages } from './useImages'
 
 export interface UploadResult {
   url: string
@@ -159,6 +160,7 @@ export function useUpload() {
   const progress = ref(0)
   const error = ref('')
   const processing = ref(false)
+  const { saveImage } = useImages()
 
   async function upload(
     file: File,
@@ -321,22 +323,14 @@ export function useUpload() {
       const mainUrl = baseUrl + '/img-api/' + mediaPath
       console.log('[Upload] Main URL:', mainUrl)
 
-      try {
-        const saveRes = await fetch(`${API_BASE}/upload/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: mainUrl,
-            thumbnailUrl: thumbnailUrl || '',
-            name: safeFileName,
-            size: file.size,
-            type: file.type,
-          }),
-        })
-        console.log('[Upload] Save response status:', saveRes.status)
-      } catch (saveErr) {
-        console.warn('[Upload] Save record failed (non-blocking):', saveErr)
-      }
+      // 保存记录到 localStorage
+      saveImage({
+        url: mainUrl,
+        thumbnailUrl: thumbnailUrl || undefined,
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      })
 
       progress.value = 100
       console.log('[Upload] Complete!')

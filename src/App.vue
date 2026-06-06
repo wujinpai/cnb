@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { watch } from 'vue'
+import { watch, onMounted } from 'vue'
 
 const store = useAppStore()
+
+onMounted(() => {
+  store.initAuth()
+})
 
 watch(
   () => store.theme,
