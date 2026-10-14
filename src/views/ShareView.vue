@@ -23,7 +23,7 @@
           {{ copied ? '已复制' : '复制链接' }}
         </button>
       </div>
-      <p class="mt-8 text-center text-xs text-stone-400">Copyright © {{ year }} · <a href="https://jisu.cn/" target="_blank" rel="noopener" class="hover:underline">己素</a></p>
+      <p class="mt-8 text-center text-xs text-stone-400">由己素图床分享 · {{ host }}</p>
     </div>
   </div>
 </template>
@@ -41,7 +41,7 @@ const loading = ref(true)
 const error = ref(false)
 const record = ref<any>(null)
 const copied = ref(false)
-const year = new Date().getFullYear()
+const host = location.host
 
 async function copyLink() {
   if (!record.value) return
