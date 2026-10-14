@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { getToken, clearToken } from './auth'
+import { getToken, clearToken } from '@/composables/useAuthState'
 
 const api = axios.create({ timeout: 60000 })
 
