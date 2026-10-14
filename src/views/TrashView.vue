@@ -12,6 +12,7 @@
 
     <div v-if="selected.size" class="card mb-4 p-3 flex flex-wrap items-center gap-2 fade-in">
       <span class="text-sm">已选 {{ selected.size }} 项</span>
+      <button class="btn !px-2.5 !py-1 !text-xs" @click="selectAll">全选</button>
       <div class="flex-1" />
       <button class="btn !py-1.5 text-sm" @click="clearSelect">取消</button>
       <button class="btn !py-1.5 text-sm" @click="batchRestore">
@@ -79,6 +80,9 @@ const confirmBatchPurge = ref(false)
 function toggleSelect(id: string) {
   if (selected.value.has(id)) selected.value.delete(id)
   else selected.value.add(id)
+}
+function selectAll() {
+  items.value.forEach((r) => selected.value.add(r.id))
 }
 function clearSelect() { selected.value.clear() }
 function toggleSelectMode() {

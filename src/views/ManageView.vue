@@ -29,6 +29,7 @@
 
     <div v-if="selected.size" class="card mb-4 p-3 flex flex-wrap items-center gap-2 fade-in">
       <span class="text-sm">已选 {{ selected.size }} 项</span>
+      <button class="btn !px-2.5 !py-1 !text-xs" @click="selectAll">全选</button>
       <div class="flex flex-wrap gap-1.5">
         <button class="btn !px-2.5 !py-1 !text-xs" @click="copySelected('url')">
           <Check v-if="copiedAllKey === 'url'" :size="13" class="text-green-600" />
@@ -261,6 +262,9 @@ function toggleSelect(id: string) {
   else selected.value.add(id)
 }
 function clearSelect() { selected.value.clear() }
+function selectAll() {
+  items.value.forEach((r) => { if (r.recordId) selected.value.add(r.recordId) })
+}
 
 function onCardClick(r: UploadItem, i: number, e: MouseEvent) {
   if (selectMode.value || e.shiftKey || e.ctrlKey || e.metaKey) { toggleSelect(r.recordId!); return }
