@@ -47,11 +47,11 @@
           <button v-if="selected.has(r.recordId!)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-stone-900 text-white grid place-items-center" @click.stop="toggleSelect(r.recordId!)">
             <Check :size="14" />
           </button>
-          <div class="absolute inset-x-0 bottom-0 p-2 pt-6 bg-gradient-to-t from-black/60 to-transparent text-white text-xs opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
+          <div class="absolute inset-x-0 bottom-0 p-2 pt-6 bg-gradient-to-t from-black/60 to-transparent text-white text-xs flex items-center gap-1">
             <span class="truncate flex-1">{{ r.name }}</span>
-            <button class="p-1 hover:bg-white/20 rounded" title="复制直链" @click.stop="copyUrl(r)"><Link2 :size="14" /></button>
-            <button class="p-1 hover:bg-white/20 rounded" title="分享" @click.stop="shareItem(r)"><Share2 :size="14" /></button>
-            <button class="p-1 hover:bg-white/20 rounded" title="删除" @click.stop="askDelete(r)"><Trash2 :size="14" /></button>
+            <button class="p-1.5 hover:bg-white/20 rounded" title="复制直链" @click.stop="copyUrl(r)"><Link2 :size="14" /></button>
+            <button class="p-1.5 hover:bg-white/20 rounded" title="分享" @click.stop="shareItem(r)"><Share2 :size="14" /></button>
+            <button class="p-1.5 hover:bg-white/20 rounded" title="删除" @click.stop="askDelete(r)"><Trash2 :size="14" /></button>
           </div>
         </div>
       </div>
@@ -64,7 +64,8 @@
     </div>
 
     <Lightbox :item="lbItem" :has-prev="lbIndex > 0" :has-next="lbIndex < items.length - 1"
-      @close="lbItem = null" @prev="step(-1)" @next="step(1)" />
+      @close="lbItem = null" @prev="step(-1)" @next="step(1)"
+      @share="shareItem" @delete="(it) => { lbItem = null; askDelete(it) }" />
 
     <ConfirmDialog :show="!!toDelete" title="移入回收站" message="文件将移入回收站，30 天后自动彻底删除。"
       @cancel="toDelete = null" @confirm="doDelete" />
