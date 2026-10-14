@@ -22,27 +22,26 @@
       </button>
     </div>
 
-    <div v-if="items.length" class="masonry">
-      <div v-for="r in items" :key="r.id" class="card overflow-hidden relative"
+    <div v-if="items.length" class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+      <div v-for="r in items" :key="r.id" class="card overflow-hidden relative !p-0"
         :class="{ 'ring-2 ring-stone-900 dark:ring-stone-100': selected.has(r.id) }">
-        <div class="relative" @click="selectMode && toggleSelect(r.id)">
-          <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="w-full opacity-70" />
-          <video v-else :src="r.url" class="w-full opacity-70" preload="metadata" muted playsinline />
+        <div class="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-800" @click="selectMode && toggleSelect(r.id)">
+          <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="h-full w-full object-cover opacity-70" />
+          <video v-else :src="r.url" class="h-full w-full object-cover opacity-70" preload="metadata" muted playsinline />
           <button v-if="selectMode || selected.has(r.id)" class="absolute top-2 left-2 w-6 h-6 rounded-full grid place-items-center border-2"
             :class="selected.has(r.id) ? 'bg-stone-900 dark:bg-stone-100 border-stone-900 dark:border-stone-100 text-white dark:text-stone-900' : 'bg-black/30 border-white/80 text-transparent'"
             @click.stop="toggleSelect(r.id)">
             <Check :size="14" />
           </button>
         </div>
-        <div class="p-3">
-          <p class="text-sm truncate" :title="r.name">{{ r.name }}</p>
-          <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">删除于 {{ formatTime(r.deletedAt) }}</p>
-          <div class="mt-2 flex flex-col gap-2">
-            <button class="btn !py-1.5 !text-xs w-full" @click="restore(r)">
-              <Undo2 :size="14" /> 恢复
+        <div class="p-2">
+          <p class="text-xs truncate" :title="r.name">{{ r.name }}</p>
+          <div class="mt-1.5 flex flex-col gap-1">
+            <button class="btn !py-1 !text-xs w-full" @click="restore(r)">
+              <Undo2 :size="13" /> 恢复
             </button>
-            <button class="btn btn-danger !py-1.5 !text-xs w-full" @click="askPurge(r)">
-              <Trash2 :size="14" /> 彻底删除
+            <button class="btn btn-danger !py-1 !text-xs w-full" @click="askPurge(r)">
+              <Trash2 :size="13" /> 彻底删除
             </button>
           </div>
         </div>

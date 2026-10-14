@@ -50,15 +50,15 @@
       </button>
     </div>
 
-    <div v-if="items.length" class="masonry">
+    <div v-if="items.length" class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
       <div v-for="(r, i) in items" :key="r.recordId"
-        class="card overflow-hidden group relative cursor-pointer"
+        class="card overflow-hidden group relative cursor-pointer !p-0"
         :class="{ 'ring-2 ring-stone-900 dark:ring-stone-100': selected.has(r.recordId!) }"
         @click="onCardClick(r, i, $event)">
-        <div class="relative">
-          <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="w-full" />
-          <div v-else class="relative">
-            <video :src="r.url" class="w-full" preload="metadata" muted playsinline />
+        <div class="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-800">
+          <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="h-full w-full object-cover" />
+          <div v-else class="relative h-full w-full">
+            <video :src="r.url" class="h-full w-full object-cover" preload="metadata" muted playsinline />
             <span class="absolute inset-0 grid place-items-center bg-black/20"><Play :size="28" class="text-white" /></span>
           </div>
           <button v-if="selectMode || selected.has(r.recordId!)" class="absolute top-2 left-2 w-6 h-6 rounded-full grid place-items-center border-2"
@@ -66,11 +66,11 @@
             @click.stop="toggleSelect(r.recordId!)">
             <Check :size="14" />
           </button>
-          <div class="absolute inset-x-0 bottom-0 p-2 pt-6 bg-gradient-to-t from-black/60 to-transparent text-white text-xs flex items-center gap-1">
+          <div class="absolute inset-x-0 bottom-0 p-1.5 pt-5 bg-gradient-to-t from-black/60 to-transparent text-white text-xs flex items-center gap-1">
             <span class="truncate flex-1">{{ r.name }}</span>
-            <button class="p-1.5 hover:bg-white/20 rounded" title="复制直链" @click.stop="copyUrl(r)"><Link2 :size="14" /></button>
-            <button class="p-1.5 hover:bg-white/20 rounded" title="分享" @click.stop="shareItem(r)"><Share2 :size="14" /></button>
-            <button class="p-1.5 hover:bg-white/20 rounded" title="删除" @click.stop="askDelete(r)"><Trash2 :size="14" /></button>
+            <button class="p-1 hover:bg-white/20 rounded" title="复制直链" @click.stop="copyUrl(r)"><Link2 :size="13" /></button>
+            <button class="p-1 hover:bg-white/20 rounded" title="分享" @click.stop="shareItem(r)"><Share2 :size="13" /></button>
+            <button class="p-1 hover:bg-white/20 rounded" title="删除" @click.stop="askDelete(r)"><Trash2 :size="13" /></button>
           </div>
         </div>
       </div>
