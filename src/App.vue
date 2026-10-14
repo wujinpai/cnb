@@ -6,7 +6,7 @@
           <img src="/favicon.png" class="w-8 h-8 rounded-xl" alt="己素图床" />
           <span>己素图床</span>
         </RouterLink>
-        <nav class="ml-6 hidden sm:flex items-center gap-1 text-sm">
+        <nav v-if="authed" class="ml-6 hidden sm:flex items-center gap-1 text-sm">
           <RouterLink to="/" class="nav-link" active-class="nav-active">上传</RouterLink>
           <RouterLink to="/manage" class="nav-link" active-class="nav-active">管理</RouterLink>
           <RouterLink to="/trash" class="nav-link" active-class="nav-active">回收站</RouterLink>
@@ -22,7 +22,7 @@
             <LogOut :size="18" />
           </button>
         </template>
-        <nav class="sm:hidden flex items-center gap-1 text-sm ml-2">
+        <nav v-if="authed" class="sm:hidden flex items-center gap-1 text-sm ml-2">
           <RouterLink to="/manage" class="nav-link" active-class="nav-active">管理</RouterLink>
           <RouterLink to="/trash" class="nav-link" active-class="nav-active">回收站</RouterLink>
         </nav>
