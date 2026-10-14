@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { getToken, isTokenLive } from '@/utils/auth'
+import { getToken } from '@/composables/useAuthState'
+import { isTokenLive } from '@/utils/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

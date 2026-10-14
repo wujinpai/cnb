@@ -38,7 +38,8 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { KeyRound, TriangleAlert } from 'lucide-vue-next'
 import { nodeApi } from '@/utils/api'
-import { setToken, isTokenLive, getToken } from '@/utils/auth'
+import { setToken } from '@/composables/useAuthState'
+import { isTokenLive, getToken } from '@/utils/auth'
 import { wallpaperLoaded } from '@/composables/useWallpaperState'
 
 const route = useRoute()
@@ -86,6 +87,13 @@ async function login() {
 onMounted(async () => {
   // 离开登录页时重置壁纸状态，避免页脚在其他页保持白字
   onUnmounted(() => { wallpaperLoaded.value = false })
+
+  // SSO 回调带 token：优先处理，直接跳首页，不拉壁纸避免白闪
+  if (route.query.token) {
+    await handleCallback()
+    return
+  }
+
   // 拉必应每日一图做背景：预加载成功后才启用，避免白字配浅底
   nodeApi.get('/bing-wallpaper').then((d: any) => {
     if (d?.url) {
@@ -99,10 +107,6 @@ onMounted(async () => {
     }
   }).catch(() => { /* 忽略，用默认背景 */ })
 
-  if (route.query.token) {
-    await handleCallback()
-    return
-  }
   try {
     const cfg: any = await nodeApi.get('/auth/config')
     configured.value = !!cfg.ssoConfigured

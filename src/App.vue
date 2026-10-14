@@ -47,18 +47,15 @@ import { useRouter } from 'vue-router'
 import { Sun, Moon, LogOut } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { wallpaperLoaded } from '@/composables/useWallpaperState'
-import { getToken, getUser, clearToken, isTokenLive } from '@/utils/auth'
+import { isAuthed, authedUser, clearToken } from '@/composables/useAuthState'
 import { nodeApi } from '@/utils/api'
 
 const { theme, toggle: toggleTheme } = useTheme()
 const router = useRouter()
 const year = new Date().getFullYear()
 
-const authed = computed(() => {
-  const t = getToken()
-  return !!t && isTokenLive(t)
-})
-const userName = computed(() => getUser()?.name || '')
+const authed = isAuthed
+const userName = computed(() => authedUser.value?.name || '')
 
 async function logout() {
   try { await nodeApi.post('/auth/logout') } catch { /* ignore */ }
