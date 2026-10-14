@@ -3,9 +3,7 @@
     <header class="sticky top-0 z-40 backdrop-blur bg-stone-100/80 dark:bg-stone-950/80 border-b border-stone-200 dark:border-stone-800">
       <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
         <RouterLink to="/" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-          <span class="w-8 h-8 rounded-xl bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 grid place-items-center">
-            <ImageIcon :size="18" />
-          </span>
+          <img src="/favicon.png" class="w-8 h-8 rounded-xl" alt="己素图床" />
           <span>己素图床</span>
         </RouterLink>
         <nav class="ml-6 hidden sm:flex items-center gap-1 text-sm">
@@ -42,7 +40,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Image as ImageIcon, Sun, Moon, LogOut } from 'lucide-vue-next'
+import { Sun, Moon, LogOut } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
 import { getToken, getUser, clearToken, isTokenLive } from '@/utils/auth'
 import { nodeApi } from '@/utils/api'

@@ -1,8 +1,6 @@
 <template>
   <div class="max-w-sm mx-auto pt-16 text-center">
-    <div class="mx-auto w-16 h-16 rounded-2xl bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 grid place-items-center mb-6">
-      <ImageIcon :size="30" />
-    </div>
+    <img src="/favicon.png" class="mx-auto w-16 h-16 rounded-2xl mb-6" alt="己素图床" />
     <h1 class="text-2xl font-bold">登录己素图床</h1>
     <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">使用己素账号一键登录</p>
 
@@ -29,7 +27,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Image as ImageIcon, KeyRound, TriangleAlert } from 'lucide-vue-next'
+import { KeyRound, TriangleAlert } from 'lucide-vue-next'
 import { nodeApi } from '@/utils/api'
 import { setToken, isTokenLive, getToken } from '@/utils/auth'
 
