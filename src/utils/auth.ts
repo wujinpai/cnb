@@ -46,8 +46,11 @@ export function isTokenLive(token?: string): boolean {
   const t = token || getToken()
   if (!t) return false
   try {
-    const payload = t.split('.')[0]
-    const data = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
+    let payload = t.split('.')[0]
+    // base64url → base64：补填充
+    payload = payload.replace(/-/g, '+').replace(/_/g, '/')
+    while (payload.length % 4) payload += '='
+    const data = JSON.parse(atob(payload))
     return typeof data.exp === 'number' && data.exp > Date.now()
   } catch {
     return false

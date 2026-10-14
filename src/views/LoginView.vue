@@ -41,7 +41,13 @@ const remember = ref(true)
 // SSO 回调：?token=xxx&name=xxx
 async function handleCallback() {
   const token = route.query.token as string
-  if (!token || !isTokenLive(token)) return
+  if (!token) return
+  if (!isTokenLive(token)) {
+    error.value = '登录凭证无效或已过期，请重新登录'
+    // 清掉 URL 里的 token，避免重复触发
+    router.replace({ name: 'login' })
+    return
+  }
   const name = (route.query.name as string) || ''
   try {
     setToken(token, remember.value, { uid: 0, name, avatar: '' })
