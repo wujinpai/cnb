@@ -19,16 +19,14 @@
       </div>
 
       <template v-else>
-        <div :class="wallpaperLoaded ? 'bg-white/95 dark:bg-stone-900/95 rounded-2xl p-6 mt-6 shadow-xl backdrop-blur' : ''">
-          <label class="flex items-center justify-center gap-2 text-sm cursor-pointer select-none"
-            :class="wallpaperLoaded ? '' : 'mt-6'">
-            <input type="checkbox" v-model="remember" class="w-4 h-4" /> 记住我（7 天）
-          </label>
-          <button class="btn btn-primary w-full mt-3 !py-3 !text-base" :disabled="loading" @click="login">
-            <KeyRound :size="18" /> {{ loading ? '跳转中…' : '用己素账号登录' }}
-          </button>
-          <p v-if="error" class="mt-3 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
-        </div>
+        <label class="mt-6 flex items-center justify-center gap-2 text-sm cursor-pointer select-none"
+          :class="wallpaperLoaded ? 'text-white' : ''">
+          <input type="checkbox" v-model="remember" class="w-4 h-4" /> 记住我（7 天）
+        </label>
+        <button class="btn btn-primary mt-3 !py-3 !text-base !px-10" :disabled="loading" @click="login">
+          <KeyRound :size="18" /> {{ loading ? '跳转中…' : '用己素账号登录' }}
+        </button>
+        <p v-if="error" class="mt-3 text-sm" :class="wallpaperLoaded ? 'text-red-300' : 'text-red-600 dark:text-red-400'">{{ error }}</p>
         <p v-if="wallpaperCopyright && wallpaperLoaded" class="mt-4 text-xs text-white/60">{{ wallpaperCopyright }}</p>
       </template>
     </div>
