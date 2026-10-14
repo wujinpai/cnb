@@ -32,7 +32,7 @@
       <RouterView />
     </main>
     <footer class="max-w-6xl mx-auto px-4 pb-8 text-center text-xs text-stone-400 dark:text-stone-600">
-      图片与小视频托管 · 用己素账号登录
+      Copyright © {{ year }} · <a href="https://jisu.cn/" target="_blank" rel="noopener" class="hover:underline">己素</a>
     </footer>
   </div>
 </template>
@@ -47,6 +47,7 @@ import { nodeApi } from '@/utils/api'
 
 const { theme, toggle: toggleTheme } = useTheme()
 const router = useRouter()
+const year = new Date().getFullYear()
 
 const authed = computed(() => {
   const t = getToken()
