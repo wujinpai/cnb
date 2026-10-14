@@ -22,10 +22,27 @@
       <button class="btn !px-3 text-sm" @click="orphanOpen = true" title="扫描 CNB 上不在记录中的孤儿文件并清理">
         清理孤儿文件
       </button>
+      <button class="btn !px-3 text-sm" :class="{ 'btn-primary': selectMode }" @click="toggleSelectMode">
+        <CheckSquare :size="16" /> {{ selectMode ? '退出多选' : '多选' }}
+      </button>
     </div>
 
-    <div v-if="selected.size" class="card mb-4 p-3 flex items-center gap-3 fade-in">
+    <div v-if="selected.size" class="card mb-4 p-3 flex flex-wrap items-center gap-2 fade-in">
       <span class="text-sm">已选 {{ selected.size }} 项</span>
+      <div class="flex flex-wrap gap-1.5">
+        <button class="btn !px-2.5 !py-1 !text-xs" @click="copySelected('url')">
+          <Check v-if="copiedAllKey === 'url'" :size="13" class="text-green-600" />
+          <Copy v-else :size="13" /> {{ copiedAllKey === 'url' ? '已复制' : '复制直链' }}
+        </button>
+        <button class="btn !px-2.5 !py-1 !text-xs" @click="copySelected('markdown')">
+          <Check v-if="copiedAllKey === 'markdown'" :size="13" class="text-green-600" />
+          <Copy v-else :size="13" /> {{ copiedAllKey === 'markdown' ? '已复制' : '复制Markdown' }}
+        </button>
+        <button class="btn !px-2.5 !py-1 !text-xs" @click="copySelected('html')">
+          <Check v-if="copiedAllKey === 'html'" :size="13" class="text-green-600" />
+          <Copy v-else :size="13" /> {{ copiedAllKey === 'html' ? '已复制' : '复制HTML' }}
+        </button>
+      </div>
       <div class="flex-1" />
       <button class="btn !py-1.5 text-sm" @click="clearSelect">取消</button>
       <button class="btn btn-danger !py-1.5 text-sm" @click="confirmBatchDelete = true">
@@ -44,7 +61,9 @@
             <video :src="r.url" class="w-full" preload="metadata" muted playsinline />
             <span class="absolute inset-0 grid place-items-center bg-black/20"><Play :size="28" class="text-white" /></span>
           </div>
-          <button v-if="selected.has(r.recordId!)" class="absolute top-2 right-2 w-6 h-6 rounded-full bg-stone-900 text-white grid place-items-center" @click.stop="toggleSelect(r.recordId!)">
+          <button v-if="selectMode || selected.has(r.recordId!)" class="absolute top-2 left-2 w-6 h-6 rounded-full grid place-items-center border-2"
+            :class="selected.has(r.recordId!) ? 'bg-stone-900 dark:bg-stone-100 border-stone-900 dark:border-stone-100 text-white dark:text-stone-900' : 'bg-black/30 border-white/80 text-transparent'"
+            @click.stop="toggleSelect(r.recordId!)">
             <Check :size="14" />
           </button>
           <div class="absolute inset-x-0 bottom-0 p-2 pt-6 bg-gradient-to-t from-black/60 to-transparent text-white text-xs flex items-center gap-1">
@@ -117,12 +136,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { Search, Trash2, Check, Play, Link2, Share2, ArrowDownWideNarrow, ArrowUpNarrowWide } from 'lucide-vue-next'
+import { Search, Trash2, Check, CheckSquare, Copy, Play, Link2, Share2, ArrowDownWideNarrow, ArrowUpNarrowWide } from 'lucide-vue-next'
 import Lightbox from '@/components/Lightbox.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { kvApi, nodeApi } from '@/utils/api'
 import { copyText } from '@/utils/clipboard'
-import type { UploadItem } from '@/utils/formatLinks'
+import { buildFormats, type UploadItem } from '@/utils/formatLinks'
 
 const items = ref<UploadItem[]>([])
 const total = ref(0)
@@ -132,6 +151,8 @@ const typeFilter = ref('')
 const sortKey = ref('createdAt')
 const dir = ref<'desc' | 'asc'>('desc')
 const selected = ref(new Set<string>())
+const selectMode = ref(false)
+const copiedAllKey = ref('')
 const toDelete = ref<UploadItem | null>(null)
 const confirmBatchDelete = ref(false)
 
@@ -242,9 +263,13 @@ function toggleSelect(id: string) {
 function clearSelect() { selected.value.clear() }
 
 function onCardClick(r: UploadItem, i: number, e: MouseEvent) {
-  if (e.shiftKey || e.ctrlKey || e.metaKey) { toggleSelect(r.recordId!); return }
+  if (selectMode.value || e.shiftKey || e.ctrlKey || e.metaKey) { toggleSelect(r.recordId!); return }
   lbIndex.value = i
   lbItem.value = r
+}
+function toggleSelectMode() {
+  selectMode.value = !selectMode.value
+  if (!selectMode.value) selected.value.clear()
 }
 function step(d: number) {
   const n = lbIndex.value + d
@@ -254,6 +279,22 @@ function step(d: number) {
 async function copyUrl(r: UploadItem) {
   const ok = await copyText(r.url)
   if (!ok) alert('复制失败')
+}
+/** 批量复制选中项的指定格式（换行分隔） */
+async function copySelected(key: 'url' | 'markdown' | 'html') {
+  const list = items.value.filter((r) => selected.value.has(r.recordId!))
+  if (!list.length) return
+  const lines = list.map((r) => {
+    const f = buildFormats(r).find((x) => x.key === key)
+    return f ? f.value : r.url
+  })
+  const ok = await copyText(lines.join('\n'))
+  if (ok) {
+    copiedAllKey.value = key
+    setTimeout(() => { copiedAllKey.value = '' }, 1500)
+  } else {
+    alert('复制失败')
+  }
 }
 async function shareItem(r: UploadItem) {
   try {
