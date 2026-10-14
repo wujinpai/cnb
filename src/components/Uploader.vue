@@ -233,7 +233,7 @@ async function uploadOne(item: QueueItem) {
     const recordId = crypto.randomUUID().replace(/-/g, '').slice(0, 16)
     const record = {
       id: recordId,
-      name: item.name,
+      name: file.name || item.name,
       url: data.url,
       thumbnailUrl: data.thumbnailUrl || undefined,
       size: data.size ?? file.size,
