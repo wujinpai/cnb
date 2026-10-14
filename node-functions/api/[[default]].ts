@@ -17,6 +17,7 @@ import {
   extractFileKey,
   isValidFileKey,
   isSsoConfigured,
+  normalizeNoteProUrl,
   MAX_UPLOAD_MB,
   MAX_VIDEO_MB,
   UPLOAD_RATE_LIMIT,
@@ -48,7 +49,7 @@ const baseUrl = () => {
   if (b && !b.endsWith('/')) b += '/'
   return b
 }
-const noteproUrl = () => (process.env.NOTE_PRO_URL || '').replace(/\/+$/, '')
+const noteproUrl = () => normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
 
 // ============================================================
 // 认证：NotePro SSO

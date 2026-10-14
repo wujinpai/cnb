@@ -76,9 +76,18 @@ export function verifySsoState(state: string): { ok: boolean; remember: boolean 
   }
 }
 
+/** 规范化 NotePro 地址：修常见手误（https// 缺冒号），必须 http(s) 开头 */
+export function normalizeNoteProUrl(raw: string): string {
+  let u = (raw || '').trim().replace(/\/+$/, '')
+  // 修手误：https//host 或 http//host → https://host
+  u = u.replace(/^https\/\//i, 'https://').replace(/^http\/\//i, 'http://')
+  if (!/^https?:\/\//i.test(u)) throw new Error('NOTE_PRO_URL 格式不正确，应为 https:// 开头的完整地址')
+  return u
+}
+
 /** 用一次性授权码向 NotePro 换身份 */
 export async function verifySsoCode(code: string): Promise<{ id: number; username: string; nickname: string }> {
-  const noteproUrl = (process.env.NOTE_PRO_URL || '').replace(/\/+$/, '')
+  const noteproUrl = normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
   const secret = process.env.SSO_SECRET || ''
   if (!noteproUrl || !secret) throw new Error('未配置 NOTE_PRO_URL 或 SSO_SECRET')
   const r = await fetch(`${noteproUrl}/api/sso/verify`, {
@@ -289,5 +298,10 @@ export const UPLOAD_RATE_LIMIT = (() => {
 })()
 
 export function isSsoConfigured(): boolean {
-  return !!((process.env.NOTE_PRO_URL || '').replace(/\/+$/, '') && process.env.SSO_SECRET)
+  try {
+    normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
+  } catch {
+    return false
+  }
+  return !!process.env.SSO_SECRET
 }
