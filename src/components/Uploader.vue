@@ -168,6 +168,8 @@ async function compressImage(file: File): Promise<{ file: File; width: number; h
   try {
     const [w, h] = fitSize(bitmap.width, bitmap.height, settings.value.maxDimension)
     const blob = await canvasToWebp(bitmap, w, h, settings.value.quality)
+    // 压缩后反而更大则保留原图（文件名保持原样）
+    if (blob.size >= file.size) return { file, width: bitmap.width, height: bitmap.height }
     const nf = new File([blob], file.name.replace(/\.\w+$/, '.webp'), { type: 'image/webp' })
     return { file: nf, width: w, height: h }
   } finally {
