@@ -1,11 +1,11 @@
 <template>
   <div class="relative -m-4 sm:-m-6">
     <!-- 必应每日一图背景 -->
-    <div v-if="wallpaperLoaded" class="fixed inset-0 -z-10">
+    <div v-if="wallpaperLoaded" class="fixed inset-0 z-0">
       <img :src="wallpaper" class="h-full w-full object-cover" alt="" />
       <div class="absolute inset-0 bg-black/45 dark:bg-black/60" />
     </div>
-    <div class="max-w-sm mx-auto pt-16 pb-16 text-center relative">
+    <div class="max-w-sm mx-auto pt-16 pb-16 text-center relative z-10">
       <img src="/favicon.png" class="mx-auto w-16 h-16 rounded-2xl mb-6 bg-white shadow-lg" alt="己素图床" />
       <h1 class="text-2xl font-bold" :class="{ 'text-white': wallpaperLoaded }">登录己素图床</h1>
       <p class="mt-2 text-sm" :class="wallpaperLoaded ? 'text-white/80' : 'text-stone-500 dark:text-stone-400'">使用己素账号一键登录</p>
