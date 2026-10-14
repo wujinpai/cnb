@@ -34,11 +34,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { KeyRound, TriangleAlert } from 'lucide-vue-next'
 import { nodeApi } from '@/utils/api'
 import { setToken, isTokenLive, getToken } from '@/utils/auth'
+import { wallpaperLoaded } from '@/composables/useWallpaperState'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,7 +48,6 @@ const loading = ref(false)
 const error = ref('')
 const remember = ref(true)
 const wallpaper = ref('')
-const wallpaperLoaded = ref(false)
 const wallpaperCopyright = ref('')
 
 // SSO 回调：?token=xxx&name=xxx
@@ -84,6 +84,8 @@ async function login() {
 }
 
 onMounted(async () => {
+  // 离开登录页时重置壁纸状态，避免页脚在其他页保持白字
+  onUnmounted(() => { wallpaperLoaded.value = false })
   // 拉必应每日一图做背景：预加载成功后才启用，避免白字配浅底
   nodeApi.get('/bing-wallpaper').then((d: any) => {
     if (d?.url) {

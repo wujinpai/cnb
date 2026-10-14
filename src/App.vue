@@ -31,7 +31,8 @@
     <main class="max-w-6xl mx-auto px-4 py-6">
       <RouterView />
     </main>
-    <footer class="max-w-6xl mx-auto px-4 pb-8 text-center text-sm text-stone-600 dark:text-stone-400">
+    <footer class="max-w-6xl mx-auto px-4 pb-8 text-center text-sm relative z-10"
+      :class="wallpaperLoaded ? 'text-white/70' : 'text-stone-600 dark:text-stone-400'">
       Copyright © {{ year }} · <a href="https://jisu.cn/" target="_blank" rel="noopener" class="hover:underline">己素</a>
     </footer>
   </div>
@@ -42,6 +43,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Sun, Moon, LogOut } from 'lucide-vue-next'
 import { useTheme } from '@/composables/useTheme'
+import { wallpaperLoaded } from '@/composables/useWallpaperState'
 import { getToken, getUser, clearToken, isTokenLive } from '@/utils/auth'
 import { nodeApi } from '@/utils/api'
 
