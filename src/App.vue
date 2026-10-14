@@ -31,7 +31,7 @@
     <main class="max-w-6xl mx-auto px-4 py-6">
       <RouterView />
     </main>
-    <footer class="max-w-6xl mx-auto px-4 pb-8 text-center text-xs text-stone-400 dark:text-stone-600">
+    <footer class="max-w-6xl mx-auto px-4 pb-8 text-center text-sm text-stone-600 dark:text-stone-400">
       Copyright © {{ year }} · <a href="https://jisu.cn/" target="_blank" rel="noopener" class="hover:underline">己素</a>
     </footer>
   </div>
