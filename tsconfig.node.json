@@ -1,0 +1,1 @@
+{"compilerOptions":{"esModuleInterop":true,"module":"ESNext","moduleResolution":"Bundler","noEmit":true,"types":["node"]},"extends":"@tsconfig/node22/tsconfig.json","include":["node-functions/**/*.ts"]}

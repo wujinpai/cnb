@@ -1,0 +1,1 @@
+{"$schema":"https://cdn.edgeone.ai/pages/schema.json","build":{"command":"npm run build","functionsDirectory":"node-functions","outputDirectory":"dist"},"name":"imgbed","routes":[{"dest":"/api/$1","src":"/api/(.*)","type":"function"},{"src":"/(.*)","type":"static"}]}
