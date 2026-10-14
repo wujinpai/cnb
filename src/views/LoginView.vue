@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-sm mx-auto pt-16 text-center">
-    <img src="/favicon.png" class="mx-auto w-16 h-16 rounded-2xl mb-6" alt="己素图床" />
+    <img src="/favicon.png" class="mx-auto w-16 h-16 rounded-2xl mb-6 bg-white" alt="己素图床" />
     <h1 class="text-2xl font-bold">登录己素图床</h1>
     <p class="mt-2 text-sm text-stone-500 dark:text-stone-400">使用己素账号一键登录</p>
 
