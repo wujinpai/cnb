@@ -59,6 +59,24 @@ app.get('/auth/config', (_req, res) => {
   res.json(reply(0, 'ok', { ssoConfigured: isSsoConfigured() }))
 })
 
+// 必应每日一图（720p）：登录页背景
+app.get('/bing-wallpaper', async (_req, res) => {
+  try {
+    const r = await fetch('https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN', {
+      signal: AbortSignal.timeout(10000),
+      headers: { 'User-Agent': 'Mozilla/5.0' },
+    })
+    const d = (await r.json()) as { images?: { urlbase?: string; title?: string; copyright?: string }[] }
+    const img = d?.images?.[0]
+    if (!img?.urlbase) throw new Error('必应返回为空')
+    // urlbase 如 /th?id=OHR.xxx，拼 720p 参数
+    const url = `https://www.bing.com${img.urlbase}_1366x768.jpg`
+    res.json(reply(0, 'ok', { url, title: img.title || '', copyright: img.copyright || '' }))
+  } catch (e: any) {
+    res.status(500).json(reply(1, `获取壁纸失败：${e?.message || ''}`, null))
+  }
+})
+
 // 前端点击"用己素账号登录"时调用，返回 NotePro 授权页地址
 app.get('/auth/login-url', (req, res) => {
   try {
