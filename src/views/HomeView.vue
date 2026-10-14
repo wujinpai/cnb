@@ -55,12 +55,14 @@
         <h2 class="text-lg font-semibold">最近上传</h2>
         <RouterLink to="/manage" class="text-sm text-stone-500 hover:underline">全部 →</RouterLink>
       </div>
-      <div v-if="recent.length" class="masonry">
-        <div v-for="r in recent" :key="r.recordId || r.url" class="card overflow-hidden cursor-pointer group" @click="openLightbox(r)">
-          <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="w-full group-hover:opacity-90 transition" />
-          <div v-else class="relative">
-            <video :src="r.url" class="w-full" preload="metadata" muted playsinline />
-            <span class="absolute inset-0 grid place-items-center bg-black/20"><Play :size="28" class="text-white" /></span>
+      <div v-if="recent.length" class="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+        <div v-for="r in recent" :key="r.recordId || r.url" class="card overflow-hidden cursor-pointer group !p-0" @click="openLightbox(r)">
+          <div class="aspect-square overflow-hidden bg-stone-100 dark:bg-stone-800">
+            <img v-if="!r.isVideo" :src="r.thumbnailUrl || r.url" :alt="r.name" loading="lazy" class="h-full w-full object-cover group-hover:opacity-90 transition" />
+            <div v-else class="relative h-full w-full">
+              <video :src="r.url" class="h-full w-full object-cover" preload="metadata" muted playsinline />
+              <span class="absolute inset-0 grid place-items-center bg-black/20"><Play :size="28" class="text-white" /></span>
+            </div>
           </div>
         </div>
       </div>
