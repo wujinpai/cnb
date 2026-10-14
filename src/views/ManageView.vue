@@ -75,7 +75,7 @@
     <div v-if="orphanOpen" class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @click.self="orphanOpen = false">
       <div class="card max-w-lg w-full max-h-[80vh] overflow-auto p-5">
         <h3 class="text-lg font-semibold mb-2">清理孤儿文件</h3>
-        <p class="text-sm text-stone-500 mb-4">扫描 CNB 存储桶中存在、但不在图床记录里的文件（例如手动上传、记录丢失的）。清理将直接从 CNB 删除，无法恢复。</p>
+        <p class="text-sm text-stone-500 mb-4">扫描 CNB 存储桶中存在、但不在己素图床记录里的文件（例如手动上传、记录丢失的）。清理将直接从 CNB 删除，无法恢复。</p>
         <div v-if="orphanState === 'idle'">
           <button class="btn" @click="scanOrphans" :disabled="orphanLoading">
             {{ orphanLoading ? '扫描中…' : '开始扫描' }}

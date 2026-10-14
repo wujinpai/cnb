@@ -23,7 +23,7 @@
           {{ copied ? '已复制' : '复制链接' }}
         </button>
       </div>
-      <p class="mt-8 text-center text-xs text-stone-400">由图床分享 · {{ host }}</p>
+      <p class="mt-8 text-center text-xs text-stone-400">由己素图床分享 · {{ host }}</p>
     </div>
   </div>
 </template>

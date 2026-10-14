@@ -6,7 +6,7 @@
           <span class="w-8 h-8 rounded-xl bg-stone-900 dark:bg-stone-100 text-stone-100 dark:text-stone-900 grid place-items-center">
             <ImageIcon :size="18" />
           </span>
-          <span>图床</span>
+          <span>己素图床</span>
         </RouterLink>
         <nav class="ml-6 hidden sm:flex items-center gap-1 text-sm">
           <RouterLink to="/" class="nav-link" active-class="nav-active">上传</RouterLink>
