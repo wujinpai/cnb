@@ -11,8 +11,8 @@ export interface UploadSettings {
 const KEY = 'imgbed-upload-settings'
 
 const defaults: UploadSettings = {
-  quality: 0.75,
-  maxDimension: 2048,
+  quality: 0.7,
+  maxDimension: 0,
   keepOriginal: false,
   generateThumbnail: true,
 }
