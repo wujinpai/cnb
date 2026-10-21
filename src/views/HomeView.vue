@@ -70,7 +70,10 @@
     </section>
 
     <Lightbox :item="lbItem" :has-prev="lbIndex > 0" :has-next="lbIndex < lbList.length - 1"
-      @close="lbItem = null" @prev="step(-1)" @next="step(1)" />
+      @close="lbItem = null" @prev="step(-1)" @next="step(1)"
+      @share="shareItem" @delete="askDelete" />
+    <ConfirmDialog :show="!!toDelete" title="移入回收站" message="文件将移入回收站，30 天后自动彻底删除。"
+      @cancel="toDelete = null" @confirm="doDelete" />
     <ShareDialog :item="shareTarget" @close="shareTarget = null" />
   </div>
 </template>
@@ -82,6 +85,7 @@ import Uploader from '@/components/Uploader.vue'
 import ResultCard from '@/components/ResultCard.vue'
 import Lightbox from '@/components/Lightbox.vue'
 import ShareDialog from '@/components/ShareDialog.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { kvApi, nodeApi } from '@/utils/api'
 import { useUploadSettings } from '@/composables/useUploadSettings'
 import type { UploadItem } from '@/utils/formatLinks'
@@ -125,6 +129,24 @@ const shareTarget = ref<UploadItem | null>(null)
 function shareItem(item: UploadItem) {
   if (!item.recordId) return
   shareTarget.value = item
+}
+
+const toDelete = ref<UploadItem | null>(null)
+function askDelete(item: UploadItem) {
+  lbItem.value = null
+  toDelete.value = item
+}
+async function doDelete() {
+  const item = toDelete.value
+  toDelete.value = null
+  if (!item?.recordId) return
+  try {
+    await kvApi.delete('', { params: { id: item.recordId } })
+    results.value = results.value.filter((x) => x.recordId !== item.recordId)
+    recent.value = recent.value.filter((x) => x.recordId !== item.recordId)
+  } catch (e: any) {
+    alert(e?.message || '删除失败')
+  }
 }
 
 async function loadRecent() {
