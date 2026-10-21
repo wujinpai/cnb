@@ -43,7 +43,7 @@
     <!-- 本次上传结果 -->
     <section v-if="results.length" class="mt-8">
       <h2 class="text-lg font-semibold mb-3">本次上传（{{ results.length }}）</h2>
-      <div class="grid sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <ResultCard v-for="r in results" :key="r.recordId" :item="r"
           @preview="openLightbox(r)" @share="shareItem(r)" />
       </div>

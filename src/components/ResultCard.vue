@@ -1,5 +1,5 @@
 <template>
-  <div class="card p-3 fade-in">
+  <div class="card p-3 fade-in min-w-0">
     <div class="flex items-start gap-3">
       <div class="w-16 h-16 rounded-lg overflow-hidden bg-stone-100 dark:bg-stone-800 shrink-0 grid place-items-center cursor-pointer" @click="$emit('preview', item)">
         <img v-if="!item.isVideo" :src="item.thumbnailUrl || item.url" class="w-full h-full object-cover" loading="lazy" />
