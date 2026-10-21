@@ -584,9 +584,20 @@ function randomToken(n) {
   return out
 }
 
-async function createShareToken(recordId) {
+async function createShareToken(recordId, opts = {}) {
   const token = randomToken(16)
-  await IMG_RECORDS_KV.put(`${SHARE_PREFIX}${token}`, JSON.stringify({ recordId, createdAt: Date.now() }))
+  const createdAt = Date.now()
+  // 限制仅作用于分享页读取；直链（/api/f/）不经过这里，不受影响
+  const expireHours = Math.min(8760, Math.max(0, Number(opts.expireHours) || 0))
+  const maxViews = Math.min(100000, Math.max(0, Math.floor(Number(opts.maxViews) || 0)))
+  const ref = {
+    recordId,
+    createdAt,
+    expiresAt: expireHours > 0 ? createdAt + expireHours * 3600_000 : 0,
+    maxViews,
+    views: 0,
+  }
+  await IMG_RECORDS_KV.put(`${SHARE_PREFIX}${token}`, JSON.stringify(ref))
   const idxKey = `${SHARE_IDX_PREFIX}${safeIdOf(recordId)}`
   let list = []
   try {
@@ -598,20 +609,42 @@ async function createShareToken(recordId) {
   return token
 }
 
+// 返回 { status: 'ok'|'notfound'|'expired'|'exhausted', record?, share? }
+// 旧 token 无 expiresAt/maxViews 字段时按不限处理，向后兼容
 async function getShareRecord(token) {
   const t = String(token || '').replace(/[^a-zA-Z0-9]/g, '')
-  if (!t) return null
+  if (!t) return { status: 'notfound' }
   let ref = null
   try {
     ref = await IMG_RECORDS_KV.get(`${SHARE_PREFIX}${t}`, { type: 'json' })
   } catch { /* ignore */ }
-  if (!ref?.recordId) return null
+  if (!ref?.recordId) return { status: 'notfound' }
+  if (ref.expiresAt && Date.now() > ref.expiresAt) return { status: 'expired' }
+  const maxViews = Number(ref.maxViews) || 0
+  const views = Number(ref.views) || 0
+  if (maxViews > 0 && views >= maxViews) return { status: 'exhausted' }
   let record = null
   try {
     record = await IMG_RECORDS_KV.get(recordKeyOf(safeIdOf(ref.recordId)), { type: 'json' })
   } catch { /* ignore */ }
-  if (!record || record.deletedAt) return null
-  return record
+  if (!record || record.deletedAt) return { status: 'notfound' }
+  // 仅有限次分享才计数（读-改-写，非原子，高并发下可能少计，并发极低可接受）
+  let curViews = views
+  if (maxViews > 0) {
+    curViews = views + 1
+    try {
+      await IMG_RECORDS_KV.put(`${SHARE_PREFIX}${t}`, JSON.stringify({ ...ref, views: curViews }))
+    } catch { /* 计数失败不阻断访问 */ }
+  }
+  return {
+    status: 'ok',
+    record,
+    share: {
+      expiresAt: Number(ref.expiresAt) || 0,
+      maxViews,
+      remaining: maxViews > 0 ? Math.max(0, maxViews - curViews) : null,
+    },
+  }
 }
 
 async function deleteShareTokensForRecord(recordId) {

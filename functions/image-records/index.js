@@ -94,8 +94,11 @@ export async function onRequest({ request, env }) {
 
     // ===== 分享页公开读取（无需登录）=====
     if (request.method === 'GET' && url.searchParams.get('share')) {
-      const record = await getShareRecord(url.searchParams.get('share'))
-      if (!record) return json(1, '分享不存在或已删除', null, 404)
+      const r = await getShareRecord(url.searchParams.get('share'))
+      if (r.status === 'expired') return json(1, '分享已过期', null, 410)
+      if (r.status === 'exhausted') return json(1, '分享浏览次数已用完', null, 410)
+      if (r.status !== 'ok' || !r.record) return json(1, '分享不存在或已删除', null, 404)
+      const record = r.record
       return json(0, '获取成功', {
         id: record.id,
         name: record.name,
@@ -107,6 +110,7 @@ export async function onRequest({ request, env }) {
         createdAt: record.createdAt,
         width: record.width,
         height: record.height,
+        share: r.share,
       })
     }
 
@@ -134,7 +138,10 @@ export async function onRequest({ request, env }) {
       if (!recordId) return json(1, '缺少 recordId', null, 400)
       const record = await IMG_RECORDS_KV.get(recordKeyOf(safeIdOf(recordId)), { type: 'json' })
       if (!record || record.deletedAt) return json(1, '记录不存在', null, 404)
-      const token = await createShareToken(record.id)
+      const token = await createShareToken(record.id, {
+        expireHours: body?.expireHours,
+        maxViews: body?.maxViews,
+      })
       return json(0, '创建成功', { token })
     }
 

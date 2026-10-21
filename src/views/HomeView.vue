@@ -71,6 +71,7 @@
 
     <Lightbox :item="lbItem" :has-prev="lbIndex > 0" :has-next="lbIndex < lbList.length - 1"
       @close="lbItem = null" @prev="step(-1)" @next="step(1)" />
+    <ShareDialog :item="shareTarget" @close="shareTarget = null" />
   </div>
 </template>
 
@@ -80,9 +81,9 @@ import { Settings2, ChevronDown, Play } from 'lucide-vue-next'
 import Uploader from '@/components/Uploader.vue'
 import ResultCard from '@/components/ResultCard.vue'
 import Lightbox from '@/components/Lightbox.vue'
+import ShareDialog from '@/components/ShareDialog.vue'
 import { kvApi, nodeApi } from '@/utils/api'
 import { useUploadSettings } from '@/composables/useUploadSettings'
-import { copyText } from '@/utils/clipboard'
 import type { UploadItem } from '@/utils/formatLinks'
 
 const { settings, update, pull } = useUploadSettings()
@@ -120,16 +121,10 @@ function onKey(e: KeyboardEvent) {
   if (e.key === 'ArrowRight') step(1)
 }
 
-async function shareItem(item: UploadItem) {
+const shareTarget = ref<UploadItem | null>(null)
+function shareItem(item: UploadItem) {
   if (!item.recordId) return
-  try {
-    const data: any = await kvApi.post('?share-create=1', { recordId: item.recordId })
-    const url = `${location.origin}/s/${data.token}`
-    const ok = await copyText(url)
-    alert(ok ? `分享链接已复制：\n${url}` : `分享链接：\n${url}`)
-  } catch (e: any) {
-    alert(e?.message || '创建分享失败')
-  }
+  shareTarget.value = item
 }
 
 async function loadRecent() {

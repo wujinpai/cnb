@@ -92,6 +92,8 @@
     <ConfirmDialog :show="confirmBatchDelete" title="批量移入回收站" :message="`确定将 ${selected.size} 个文件移入回收站吗？`"
       @cancel="confirmBatchDelete = false" @confirm="doBatchDelete" />
 
+    <ShareDialog :item="shareTarget" @close="shareTarget = null" />
+
     <!-- 孤儿文件清理 -->
     <div v-if="orphanOpen" class="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4" @click.self="orphanOpen = false">
       <div class="card max-w-lg w-full max-h-[80vh] overflow-auto p-5">
@@ -140,6 +142,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Search, Trash2, Check, CheckSquare, Copy, Play, Link2, Share2, ArrowDownWideNarrow, ArrowUpNarrowWide } from 'lucide-vue-next'
 import Lightbox from '@/components/Lightbox.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ShareDialog from '@/components/ShareDialog.vue'
 import { kvApi, nodeApi } from '@/utils/api'
 import { copyText } from '@/utils/clipboard'
 import { buildFormats, type UploadItem } from '@/utils/formatLinks'
@@ -300,15 +303,10 @@ async function copySelected(key: 'url' | 'markdown' | 'html') {
     alert('复制失败')
   }
 }
-async function shareItem(r: UploadItem) {
-  try {
-    const data: any = await kvApi.post('?share-create=1', { recordId: r.recordId })
-    const url = `${location.origin}/s/${data.token}`
-    const ok = await copyText(url)
-    alert(ok ? `分享链接已复制：\n${url}` : `分享链接：\n${url}`)
-  } catch (e: any) {
-    alert(e?.message || '创建分享失败')
-  }
+const shareTarget = ref<UploadItem | null>(null)
+function shareItem(r: UploadItem) {
+  if (!r.recordId) return
+  shareTarget.value = r
 }
 
 function askDelete(r: UploadItem) { toDelete.value = r }

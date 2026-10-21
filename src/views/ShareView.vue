@@ -2,7 +2,7 @@
   <div class="max-w-3xl mx-auto">
     <div v-if="loading" class="text-center py-20 text-stone-400">加载中…</div>
     <div v-else-if="error" class="text-center py-20">
-      <p class="text-lg font-medium">分享不存在或已删除</p>
+      <p class="text-lg font-medium">{{ error }}</p>
       <RouterLink to="/" class="btn mt-4">回首页</RouterLink>
     </div>
     <div v-else-if="record" class="fade-in">
@@ -23,13 +23,14 @@
           {{ copied ? '已复制' : '复制链接' }}
         </button>
       </div>
+      <p v-if="limitLine" class="mt-3 text-xs text-amber-600 dark:text-amber-500">{{ limitLine }}</p>
       <p class="mt-8 text-center text-xs text-stone-400">由己素图床分享 · {{ host }}</p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Download, Copy, Check } from 'lucide-vue-next'
 import { publicKv } from '@/utils/api'
@@ -38,10 +39,19 @@ import { formatSize, formatTime } from '@/utils/formatLinks'
 
 const route = useRoute()
 const loading = ref(true)
-const error = ref(false)
+const error = ref('')
 const record = ref<any>(null)
 const copied = ref(false)
 const host = location.host
+
+const limitLine = computed(() => {
+  const s = record.value?.share
+  if (!s) return ''
+  const parts: string[] = []
+  if (s.expiresAt) parts.push(`有效期至 ${formatTime(s.expiresAt)}`)
+  if (s.remaining !== null && s.remaining !== undefined) parts.push(`剩余可浏览 ${s.remaining} 次`)
+  return parts.join(' · ')
+})
 
 async function copyLink() {
   if (!record.value) return
@@ -56,8 +66,8 @@ onMounted(async () => {
   try {
     const data: any = await publicKv.get('', { params: { share: route.params.token } })
     record.value = data
-  } catch {
-    error.value = true
+  } catch (e: any) {
+    error.value = e?.message || '分享不存在或已删除'
   } finally {
     loading.value = false
   }
