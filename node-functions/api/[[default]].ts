@@ -102,7 +102,12 @@ app.get('/auth/callback', async (req, res) => {
   if (!st.ok) return failPage('state 校验失败，请重新登录')
   try {
     const u = await verifySsoCode(code)
-    const token = signAuthToken(u.id, u.nickname || u.username, '', st.remember)
+    // 图床仅限 NotePro 管理员登录，普通会员不签发 token，跳回登录页提示
+    if (u.role !== 'admin') {
+      const sep = baseUrl().includes('?') ? '&' : '?'
+      return res.redirect(`${baseUrl()}login${sep}error=${encodeURIComponent('非管理员无法登录图床')}`)
+    }
+    const token = signAuthToken(u.id, u.nickname || u.username, '', st.remember, u.role)
     const sep = baseUrl().includes('?') ? '&' : '?'
     // token 经 URL 交给前端写入 localStorage（一次性，阅后即焚）
     res.redirect(`${baseUrl()}login${sep}token=${encodeURIComponent(token)}&name=${encodeURIComponent(u.nickname || u.username)}`)

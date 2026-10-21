@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 
 // ============================================================
 // 认证 token（HMAC-SHA256，NotePro SSO 换发）
-// payload: { uid, name, avatar, exp, nonce }
+// payload: { uid, name, avatar, role, exp, nonce }
 // ============================================================
 
 const AUTH_TOKEN_TTL_MS = 24 * 60 * 60 * 1000
@@ -18,15 +18,16 @@ export interface AuthPayload {
   uid: number
   name: string
   avatar?: string
+  role: string
   exp: number
   nonce: string
 }
 
-/** 签发访问 token（SSO 登录成功后调用） */
-export function signAuthToken(uid: number, name: string, avatar = '', remember = false): string {
+/** 签发访问 token（SSO 登录成功后调用，仅管理员） */
+export function signAuthToken(uid: number, name: string, avatar = '', remember = false, role = ''): string {
   const ttl = remember ? REMEMBER_TOKEN_TTL_MS : AUTH_TOKEN_TTL_MS
   const payload = Buffer.from(
-    JSON.stringify({ uid, name, avatar, exp: Date.now() + ttl, nonce: crypto.randomUUID() }),
+    JSON.stringify({ uid, name, avatar, role, exp: Date.now() + ttl, nonce: crypto.randomUUID() }),
   ).toString('base64url')
   const sig = crypto.createHmac('sha256', getAuthSecret()).update(payload).digest('base64url')
   return `${payload}.${sig}`
@@ -43,6 +44,8 @@ export function verifyAuthToken(token: string): AuthPayload | null {
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as AuthPayload
     if (typeof data.exp !== 'number' || data.exp <= Date.now()) return null
     if (typeof data.uid !== 'number') return null
+    // 图床仅限 NotePro 管理员：非管理员（含旧版无 role 的 token）一律拒绝
+    if (data.role !== 'admin') return null
     return data
   } catch {
     return null
@@ -86,7 +89,7 @@ export function normalizeNoteProUrl(raw: string): string {
 }
 
 /** 用一次性授权码向 NotePro 换身份 */
-export async function verifySsoCode(code: string): Promise<{ id: number; username: string; nickname: string }> {
+export async function verifySsoCode(code: string): Promise<{ id: number; username: string; nickname: string; role: string }> {
   const noteproUrl = normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
   const secret = process.env.SSO_SECRET || ''
   if (!noteproUrl || !secret) throw new Error('未配置 NOTE_PRO_URL 或 SSO_SECRET')
@@ -98,7 +101,7 @@ export async function verifySsoCode(code: string): Promise<{ id: number; usernam
   })
   const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; user?: { id: number; username: string; nickname: string; role: string } }
   if (!d.ok || !d.user) throw new Error(d.error || 'NotePro 验证失败')
-  return { id: d.user.id, username: d.user.username, nickname: d.user.nickname || d.user.username }
+  return { id: d.user.id, username: d.user.username, nickname: d.user.nickname || d.user.username, role: d.user.role || '' }
 }
 
 // ============================================================

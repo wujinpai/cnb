@@ -88,6 +88,12 @@ onMounted(async () => {
   // 离开登录页时重置壁纸状态，避免页脚在其他页保持白字
   onUnmounted(() => { wallpaperLoaded.value = false })
 
+  // SSO 回调被拒（如非管理员）：显示提示并清掉 URL 参数
+  if (route.query.error) {
+    error.value = String(route.query.error)
+    router.replace({ name: 'login' })
+  }
+
   // SSO 回调带 token：优先处理，直接跳首页，不拉壁纸避免白闪
   if (route.query.token) {
     await handleCallback()
