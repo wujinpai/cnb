@@ -6,7 +6,7 @@
         : 'backdrop-blur bg-stone-100/80 dark:bg-stone-950/80 border-b border-stone-200 dark:border-stone-800'">
       <div class="max-w-6xl mx-auto px-4 h-14 flex items-center gap-2">
         <RouterLink to="/" class="flex items-center gap-2 font-semibold text-lg tracking-tight">
-          <img src="/favicon.png" class="w-8 h-8 rounded-xl bg-white" alt="己素图床" />
+          <img src="/favicon.png" class="w-8 h-8" alt="己素图床" />
           <span>己素图床</span>
         </RouterLink>
         <nav v-if="authed" class="ml-6 hidden sm:flex items-center gap-1 text-sm">
