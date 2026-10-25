@@ -8,7 +8,7 @@
     <div v-else-if="record" class="fade-in">
       <div class="card overflow-hidden">
         <video v-if="record.isVideo" :src="record.url" controls playsinline class="w-full max-h-[70vh] bg-black" />
-        <img v-else :src="record.url" :alt="record.name" class="w-full max-h-[70vh] object-contain bg-stone-100 dark:bg-stone-900" />
+        <img v-else :src="showThumb && record.thumbnailUrl ? record.thumbnailUrl : record.url" :alt="record.name" class="w-full max-h-[70vh] object-contain bg-stone-100 dark:bg-stone-900" />
       </div>
       <div class="mt-4 flex flex-wrap items-center gap-3">
         <div class="flex-1 min-w-0">
@@ -25,6 +25,9 @@
         <button v-if="record.thumbnailUrl" class="btn" @click="copyThumb">
           <Check v-if="copiedThumb" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
           {{ copiedThumb ? '已复制' : '缩略图' }}
+        </button>
+        <button v-if="!record.isVideo && record.thumbnailUrl" class="btn" @click="showThumb = !showThumb">
+          {{ showThumb ? '查看原图' : '查看缩略图' }}
         </button>
       </div>
       <p v-if="limitLine" class="mt-3 text-xs text-amber-600 dark:text-amber-500">{{ limitLine }}</p>
@@ -47,6 +50,7 @@ const error = ref('')
 const record = ref<any>(null)
 const copied = ref(false)
 const copiedThumb = ref(false)
+const showThumb = ref(false)
 const host = location.host
 
 const limitLine = computed(() => {
