@@ -10,25 +10,25 @@
         <video v-if="record.isVideo" :src="record.url" controls playsinline class="w-full max-h-[70vh] bg-black" />
         <img v-else :src="showThumb && record.thumbnailUrl ? record.thumbnailUrl : record.url" :alt="record.name" class="w-full max-h-[70vh] object-contain bg-stone-100 dark:bg-stone-900" />
       </div>
-      <div class="mt-4 flex flex-wrap items-center gap-3">
-        <div class="flex-1 min-w-0">
-          <p class="font-medium truncate">{{ record.name }}</p>
-          <p class="text-xs text-stone-500 dark:text-stone-400">{{ formatSize(record.size) }} · {{ formatTime(record.createdAt) }}</p>
+      <div class="mt-4">
+        <p class="font-medium truncate">{{ record.name }}</p>
+        <p class="text-xs text-stone-500 dark:text-stone-400">{{ formatSize(record.size) }} · {{ formatTime(record.createdAt) }}</p>
+        <div class="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+          <a class="btn w-full sm:w-auto" :href="record.url" :download="record.name">
+            <Download :size="15" /> 下载
+          </a>
+          <button class="btn w-full sm:w-auto" @click="copyLink">
+            <Check v-if="copied" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
+            {{ copied ? '已复制' : '复制链接' }}
+          </button>
+          <button v-if="record.thumbnailUrl" class="btn w-full sm:w-auto" @click="copyThumb">
+            <Check v-if="copiedThumb" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
+            {{ copiedThumb ? '已复制' : '缩略图' }}
+          </button>
+          <button v-if="!record.isVideo && record.thumbnailUrl" class="btn w-full sm:w-auto" @click="showThumb = !showThumb">
+            {{ showThumb ? '查看原图' : '查看缩略图' }}
+          </button>
         </div>
-        <a class="btn" :href="record.url" :download="record.name">
-          <Download :size="15" /> 下载
-        </a>
-        <button class="btn" @click="copyLink">
-          <Check v-if="copied" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
-          {{ copied ? '已复制' : '复制链接' }}
-        </button>
-        <button v-if="record.thumbnailUrl" class="btn" @click="copyThumb">
-          <Check v-if="copiedThumb" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
-          {{ copiedThumb ? '已复制' : '缩略图' }}
-        </button>
-        <button v-if="!record.isVideo && record.thumbnailUrl" class="btn" @click="showThumb = !showThumb">
-          {{ showThumb ? '查看原图' : '查看缩略图' }}
-        </button>
       </div>
       <p v-if="limitLine" class="mt-3 text-xs text-amber-600 dark:text-amber-500">{{ limitLine }}</p>
       <p class="mt-8 text-center text-xs text-stone-400">由己素图床分享 · {{ host }}</p>
