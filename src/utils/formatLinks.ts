@@ -9,7 +9,7 @@ export interface UploadItem {
   recordId?: string
 }
 
-export type LinkFormatKey = 'url' | 'markdown' | 'html'
+export type LinkFormatKey = 'url' | 'markdown' | 'html' | 'thumbnail'
 
 export interface LinkFormat {
   key: LinkFormatKey
@@ -25,7 +25,7 @@ function escapeLink(s: string): string {
   return s.replace(/\)/g, '%29')
 }
 
-/** 为单个文件构建 3 种复制格式；视频用 <video> 标签 */
+/** 为单个文件构建复制格式；有缩略图时多一项「缩略图」直链；视频用 <video> 标签 */
 export function buildFormats(item: UploadItem): LinkFormat[] {
   const alt = (item.name || (item.isVideo ? 'video' : 'img')).replace(/\.\w+$/, '')
   const url = item.url
@@ -35,11 +35,15 @@ export function buildFormats(item: UploadItem): LinkFormat[] {
   const markdown = item.isVideo
     ? `[${alt}](${escapeLink(url)})`
     : `![${alt}](${escapeLink(url)})`
-  return [
+  const formats: LinkFormat[] = [
     { key: 'url', label: '直链', value: url },
     { key: 'markdown', label: 'Markdown', value: markdown },
     { key: 'html', label: 'HTML', value: html },
   ]
+  if (item.thumbnailUrl) {
+    formats.push({ key: 'thumbnail', label: '缩略图', value: item.thumbnailUrl })
+  }
+  return formats
 }
 
 export function formatSize(bytes: number): string {

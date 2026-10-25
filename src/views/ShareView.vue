@@ -22,6 +22,10 @@
           <Check v-if="copied" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
           {{ copied ? '已复制' : '复制链接' }}
         </button>
+        <button v-if="record.thumbnailUrl" class="btn" @click="copyThumb">
+          <Check v-if="copiedThumb" :size="15" class="text-green-600" /> <Copy v-else :size="15" />
+          {{ copiedThumb ? '已复制' : '缩略图' }}
+        </button>
       </div>
       <p v-if="limitLine" class="mt-3 text-xs text-amber-600 dark:text-amber-500">{{ limitLine }}</p>
       <p class="mt-8 text-center text-xs text-stone-400">由己素图床分享 · {{ host }}</p>
@@ -42,6 +46,7 @@ const loading = ref(true)
 const error = ref('')
 const record = ref<any>(null)
 const copied = ref(false)
+const copiedThumb = ref(false)
 const host = location.host
 
 const limitLine = computed(() => {
@@ -59,6 +64,15 @@ async function copyLink() {
   if (ok) {
     copied.value = true
     setTimeout(() => { copied.value = false }, 1500)
+  }
+}
+
+async function copyThumb() {
+  if (!record.value?.thumbnailUrl) return
+  const ok = await copyText(record.value.thumbnailUrl)
+  if (ok) {
+    copiedThumb.value = true
+    setTimeout(() => { copiedThumb.value = false }, 1500)
   }
 }
 

@@ -11,8 +11,8 @@
     </button>
     <div class="max-w-5xl max-h-[88vh] flex flex-col items-center" @click.stop>
       <video v-if="item.isVideo" :src="item.url" controls playsinline class="max-w-full max-h-[70vh] rounded-lg shadow-2xl" />
-      <img v-else :src="item.url" :alt="item.name" class="max-w-full max-h-[70vh] rounded-lg shadow-2xl object-contain" />
-      <p class="mt-3 text-sm text-white/70 truncate max-w-full">{{ item.name }} · {{ formatSize(item.size) }}</p>
+      <img v-else :src="showThumb && item.thumbnailUrl ? item.thumbnailUrl : item.url" :alt="item.name" class="max-w-full max-h-[70vh] rounded-lg shadow-2xl object-contain" />
+      <p class="mt-3 text-sm text-white/70 truncate max-w-full">{{ item.name }} · {{ showThumb ? '缩略图' : formatSize(item.size) }}</p>
       <div class="mt-3 flex flex-wrap justify-center gap-2">
         <button v-for="f in formats" :key="f.key"
           class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1.5"
@@ -20,6 +20,11 @@
           <Check v-if="copiedKey === f.key" :size="13" class="text-green-400" />
           <Copy v-else :size="13" />
           {{ copiedKey === f.key ? '已复制' : f.label }}
+        </button>
+        <button v-if="!item.isVideo && item.thumbnailUrl"
+          class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1.5"
+          @click="showThumb = !showThumb">
+          <Image :size="13" /> {{ showThumb ? '查看原图' : '查看缩略图' }}
         </button>
         <button class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1.5" @click="$emit('share', item)">
           <Share2 :size="13" /> 分享
@@ -36,8 +41,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { X, ChevronLeft, ChevronRight, Copy, Check, Share2, Download, Trash2 } from 'lucide-vue-next'
+import { ref, computed, watch } from 'vue'
+import { X, ChevronLeft, ChevronRight, Copy, Check, Share2, Download, Trash2, Image } from 'lucide-vue-next'
 import { buildFormats, formatSize, type UploadItem } from '@/utils/formatLinks'
 import { copyText } from '@/utils/clipboard'
 
@@ -46,6 +51,8 @@ defineEmits<{ close: []; prev: []; next: []; share: [item: UploadItem]; delete: 
 
 const formats = computed(() => props.item ? buildFormats(props.item) : [])
 const copiedKey = ref('')
+const showThumb = ref(false)
+watch(() => props.item, () => { showThumb.value = false })
 
 async function copy(f: { key: string; value: string }) {
   const ok = await copyText(f.value)
