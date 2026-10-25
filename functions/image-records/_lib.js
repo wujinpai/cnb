@@ -688,6 +688,9 @@ function normalizeSiteSettings(input) {
     }
   }
   if (['light', 'dark', 'system'].includes(input.theme)) out.theme = input.theme
+  // 设置版本号：供前端拉取时判断云端文档是否需要迁移（老文档无此字段）
+  const sv = Math.floor(Number(input.settingsVersion))
+  if (Number.isFinite(sv) && sv >= 1 && sv <= 99) out.settingsVersion = sv
   return Object.keys(out).length > 0 ? out : null
 }
 

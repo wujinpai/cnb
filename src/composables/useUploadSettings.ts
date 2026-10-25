@@ -34,8 +34,8 @@ const settings = ref<UploadSettings>(load())
 
 function persist() {
   saveEnvelope(settings.value)
-  // 同步到云端（登录态，失败静默）
-  kvApi.post('?site-settings=1', { uploadSettings: settings.value }).catch(() => {})
+  // 同步到云端（登录态，失败静默），带版本号供拉取时迁移老文档
+  kvApi.post('?site-settings=1', { uploadSettings: settings.value, settingsVersion: SETTINGS_VERSION }).catch(() => {})
 }
 
 export function useUploadSettings() {
@@ -43,13 +43,21 @@ export function useUploadSettings() {
     Object.assign(settings.value, patch)
     persist()
   }
-  /** 登录后从云端拉取覆盖本地 */
+  /** 登录后从云端拉取覆盖本地；老文档（无版本号或旧版）按迁移规则处理一次并回写 */
   const pull = async () => {
     try {
       const doc: any = await kvApi.get('?site-settings=1')
       if (doc?.uploadSettings) {
-        Object.assign(settings.value, doc.uploadSettings)
+        const v = Math.floor(Number(doc.settingsVersion))
+        const needsMigration = !(Number.isFinite(v) && v >= SETTINGS_VERSION)
+        const migrated = needsMigration
+          ? migrateSettings(doc.uploadSettings, Number.isFinite(v) && v >= 1 ? v : 1)
+          : doc.uploadSettings
+        Object.assign(settings.value, migrated)
         saveEnvelope(settings.value)
+        if (needsMigration) {
+          kvApi.post('?site-settings=1', { uploadSettings: settings.value, settingsVersion: SETTINGS_VERSION }).catch(() => {})
+        }
       }
     } catch { /* ignore */ }
   }
