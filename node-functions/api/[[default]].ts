@@ -86,7 +86,7 @@ app.get('/auth/login-url', (req, res) => {
     const state = signSsoState(remember)
     const redirectUri = `${baseUrl()}api/auth/callback`
     const { clientId } = ssoCfg()
-    const url = `${ssoUrl()}/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`
+    const url = `${ssoUrl()}/api/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`
     res.json(reply(0, 'ok', { url }))
   } catch (e) {
     res.status(500).json(reply(1, (e as Error).message, null))
