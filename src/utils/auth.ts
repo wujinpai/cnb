@@ -2,7 +2,7 @@ const KEY = 'imgbed_token'
 const USER_KEY = 'imgbed_user'
 
 export interface SessionUser {
-  uid: number
+  uid: string
   name: string
   avatar: string
 }

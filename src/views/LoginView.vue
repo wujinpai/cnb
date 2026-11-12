@@ -8,13 +8,13 @@
     <div class="max-w-sm mx-auto pt-16 pb-16 text-center relative z-10">
       <img src="/favicon.png" class="mx-auto w-16 h-16 mb-6 drop-shadow-lg" alt="己素图床" />
       <h1 class="text-2xl font-bold" :class="{ 'text-white': wallpaperLoaded }">登录己素图床</h1>
-      <p class="mt-2 text-sm" :class="wallpaperLoaded ? 'text-white/80' : 'text-stone-500 dark:text-stone-400'">使用己素账号一键登录</p>
+      <p class="mt-2 text-sm" :class="wallpaperLoaded ? 'text-white/80' : 'text-stone-500 dark:text-stone-400'">使用己素 SSO 一键登录</p>
 
       <div v-if="!configured" class="card mt-6 p-4 text-sm text-left">
         <p class="font-medium flex items-center gap-2"><TriangleAlert :size="16" class="text-amber-500" /> 未配置登录</p>
         <p class="mt-2 text-stone-500 dark:text-stone-400">
-          管理员请在 EdgeOne 控制台设置 <code>NOTE_PRO_URL</code> 与 <code>SSO_SECRET</code> 环境变量后重新部署，
-          并在 NotePro 管理后台的 SSO 设置中把本站回调地址加入白名单。
+          管理员请在 EdgeOne 控制台设置 <code>SSO_URL</code>、<code>SSO_CLIENT_ID</code> 与 <code>SSO_CLIENT_SECRET</code> 环境变量后重新部署，
+          并在己素 SSO 管理后台确认本站已登记为接入方（回调地址已加入白名单）。
         </p>
       </div>
 
@@ -24,7 +24,7 @@
           <input type="checkbox" v-model="remember" class="w-4 h-4" /> 记住我（7 天）
         </label>
         <button class="btn btn-primary mt-3 !py-3 !text-base !px-10" :disabled="loading" @click="login">
-          <KeyRound :size="18" /> {{ loading ? '跳转中…' : '用己素账号登录' }}
+          <KeyRound :size="18" /> {{ loading ? '跳转中…' : '用己素 SSO 登录' }}
         </button>
         <p v-if="error" class="mt-3 text-sm" :class="wallpaperLoaded ? 'text-red-300' : 'text-red-600 dark:text-red-400'">{{ error }}</p>
         <p v-if="wallpaperCopyright && wallpaperLoaded" class="mt-4 text-xs text-white/60">{{ wallpaperCopyright }}</p>
@@ -63,7 +63,7 @@ async function handleCallback() {
   }
   const name = (route.query.name as string) || ''
   try {
-    setToken(token, remember.value, { uid: 0, name, avatar: '' })
+    setToken(token, remember.value, { uid: '', name, avatar: '' })
     // 拉取真实身份
     const me: any = await nodeApi.get('/auth/me')
     setToken(token, remember.value, { uid: me.user.uid, name: me.user.name, avatar: me.user.avatar || '' })

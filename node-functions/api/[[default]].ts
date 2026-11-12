@@ -17,7 +17,8 @@ import {
   extractFileKey,
   isValidFileKey,
   isSsoConfigured,
-  normalizeNoteProUrl,
+  normalizeSsoUrl,
+  ssoCfg,
   MAX_UPLOAD_MB,
   MAX_VIDEO_MB,
   UPLOAD_RATE_LIMIT,
@@ -42,17 +43,17 @@ for (const key of ['CNB_REPO', 'CNB_TOKEN', 'AUTH_SECRET']) {
   if (!process.env[key]) console.error(`[Config] 缺少环境变量 ${key}：相关功能不可用，请在 EdgeOne 控制台补齐后重新部署`)
 }
 if (!process.env.BASE_IMG_URL) console.error('[Config] 缺少环境变量 BASE_IMG_URL：上传返回的链接域名将为空')
-if (!isSsoConfigured()) console.error('[Config] 未配置 NOTE_PRO_URL / SSO_SECRET：登录不可用')
+if (!isSsoConfigured()) console.error('[Config] 未配置 SSO_URL / SSO_CLIENT_ID / SSO_CLIENT_SECRET：登录不可用')
 
 const baseUrl = () => {
   let b = process.env.BASE_IMG_URL || ''
   if (b && !b.endsWith('/')) b += '/'
   return b
 }
-const noteproUrl = () => normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
+const ssoUrl = () => normalizeSsoUrl(process.env.SSO_URL || '')
 
 // ============================================================
-// 认证：NotePro SSO
+// 认证：己素 SSO
 // ============================================================
 
 app.get('/auth/config', (_req, res) => {
@@ -77,21 +78,22 @@ app.get('/bing-wallpaper', async (_req, res) => {
   }
 })
 
-// 前端点击"用己素账号登录"时调用，返回 NotePro 授权页地址
+// 前端点击"用己素 SSO 登录"时调用，返回己素 SSO 授权页地址
 app.get('/auth/login-url', (req, res) => {
   try {
-    if (!isSsoConfigured()) return res.status(500).json(reply(1, '未配置 NotePro 登录', null))
+    if (!isSsoConfigured()) return res.status(500).json(reply(1, '未配置己素 SSO 登录', null))
     const remember = req.query.remember === '1'
     const state = signSsoState(remember)
     const redirectUri = `${baseUrl()}api/auth/callback`
-    const url = `${noteproUrl()}/?sso=1&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`
+    const { clientId } = ssoCfg()
+    const url = `${ssoUrl()}/authorize?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`
     res.json(reply(0, 'ok', { url }))
   } catch (e) {
     res.status(500).json(reply(1, (e as Error).message, null))
   }
 })
 
-// NotePro 回调：code + state → 验码换身份 → 签发本站 token → 跳回前端
+// 己素 SSO 回调：code + state → 换 token 取身份 → 签发本站 token → 跳回前端
 app.get('/auth/callback', async (req, res) => {
   const failPage = (msg: string) =>
     res.status(400).send(`<meta charset="utf-8"><title>登录失败</title><p>登录失败：${msg}</p><p><a href="/login">返回重试</a></p>`)
@@ -101,8 +103,8 @@ app.get('/auth/callback', async (req, res) => {
   const st = verifySsoState(state)
   if (!st.ok) return failPage('state 校验失败，请重新登录')
   try {
-    const u = await verifySsoCode(code)
-    // 图床仅限 NotePro 管理员登录，普通会员不签发 token，跳回登录页提示
+    const u = await verifySsoCode(code, `${baseUrl()}api/auth/callback`)
+    // 图床仅限己素 SSO 管理员登录，普通会员不签发 token，跳回登录页提示
     if (u.role !== 'admin') {
       const sep = baseUrl().includes('?') ? '&' : '?'
       return res.redirect(`${baseUrl()}login${sep}error=${encodeURIComponent('非管理员无法登录图床')}`)

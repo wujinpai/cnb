@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 
 // ============================================================
-// 认证 token（HMAC-SHA256，NotePro SSO 换发）
+// 认证 token（HMAC-SHA256，己素 SSO 换发）
 // payload: { uid, name, avatar, role, exp, nonce }
 // ============================================================
 
@@ -15,7 +15,7 @@ export function getAuthSecret(): string {
 }
 
 export interface AuthPayload {
-  uid: number
+  uid: string
   name: string
   avatar?: string
   role: string
@@ -24,7 +24,7 @@ export interface AuthPayload {
 }
 
 /** 签发访问 token（SSO 登录成功后调用，仅管理员） */
-export function signAuthToken(uid: number, name: string, avatar = '', remember = false, role = ''): string {
+export function signAuthToken(uid: string, name: string, avatar = '', remember = false, role = ''): string {
   const ttl = remember ? REMEMBER_TOKEN_TTL_MS : AUTH_TOKEN_TTL_MS
   const payload = Buffer.from(
     JSON.stringify({ uid, name, avatar, role, exp: Date.now() + ttl, nonce: crypto.randomUUID() }),
@@ -43,8 +43,9 @@ export function verifyAuthToken(token: string): AuthPayload | null {
     if (sigBuf.length !== expected.length || !crypto.timingSafeEqual(sigBuf, expected)) return null
     const data = JSON.parse(Buffer.from(payload, 'base64url').toString()) as AuthPayload
     if (typeof data.exp !== 'number' || data.exp <= Date.now()) return null
-    if (typeof data.uid !== 'number') return null
-    // 图床仅限 NotePro 管理员：非管理员（含旧版无 role 的 token）一律拒绝
+    // uid：己素 SSO 是字符串 id；旧 NotePro token 是数字 id，过渡期两者都认
+    if (typeof data.uid !== 'string' && typeof data.uid !== 'number') return null
+    // 图床仅限己素 SSO 管理员：非管理员（含旧版无 role 的 token）一律拒绝
     if (data.role !== 'admin') return null
     return data
   } catch {
@@ -79,29 +80,44 @@ export function verifySsoState(state: string): { ok: boolean; remember: boolean 
   }
 }
 
-/** 规范化 NotePro 地址：修常见手误（https// 缺冒号），必须 http(s) 开头 */
-export function normalizeNoteProUrl(raw: string): string {
+/** 规范化己素 SSO 地址：修常见手误（https// 缺冒号），必须 http(s) 开头 */
+export function normalizeSsoUrl(raw: string): string {
   let u = (raw || '').trim().replace(/\/+$/, '')
   // 修手误：https//host 或 http//host → https://host
   u = u.replace(/^https\/\//i, 'https://').replace(/^http\/\//i, 'http://')
-  if (!/^https?:\/\//i.test(u)) throw new Error('NOTE_PRO_URL 格式不正确，应为 https:// 开头的完整地址')
+  if (!/^https?:\/\//i.test(u)) throw new Error('SSO_URL 格式不正确，应为 https:// 开头的完整地址')
   return u
 }
 
-/** 用一次性授权码向 NotePro 换身份 */
-export async function verifySsoCode(code: string): Promise<{ id: number; username: string; nickname: string; role: string }> {
-  const noteproUrl = normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
-  const secret = process.env.SSO_SECRET || ''
-  if (!noteproUrl || !secret) throw new Error('未配置 NOTE_PRO_URL 或 SSO_SECRET')
-  const r = await fetch(`${noteproUrl}/api/sso/verify`, {
+/** 己素 SSO 配置：地址 + 接入方 client_id / client_secret */
+export function ssoCfg(): { url: string; clientId: string; clientSecret: string } {
+  const url = normalizeSsoUrl(process.env.SSO_URL || '')
+  const clientId = (process.env.SSO_CLIENT_ID || '').trim()
+  const clientSecret = (process.env.SSO_CLIENT_SECRET || '').trim()
+  if (!url || !clientId || !clientSecret) throw new Error('未配置 SSO_URL 或 SSO_CLIENT_ID 或 SSO_CLIENT_SECRET')
+  return { url, clientId, clientSecret }
+}
+
+/** 用一次性授权码向己素 SSO 换身份：/api/token 换 access_token → /api/me 取用户（含 role） */
+export async function verifySsoCode(code: string, redirectUri: string): Promise<{ id: string; username: string; nickname: string; role: string }> {
+  const { url, clientId, clientSecret } = ssoCfg()
+  const tokenRes = await fetch(`${url}/api/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, secret }),
+    body: JSON.stringify({ grant_type: 'authorization_code', client_id: clientId, client_secret: clientSecret, code, redirect_uri: redirectUri }),
     signal: AbortSignal.timeout(15000),
   })
-  const d = (await r.json().catch(() => ({}))) as { ok?: boolean; error?: string; user?: { id: number; username: string; nickname: string; role: string } }
-  if (!d.ok || !d.user) throw new Error(d.error || 'NotePro 验证失败')
-  return { id: d.user.id, username: d.user.username, nickname: d.user.nickname || d.user.username, role: d.user.role || '' }
+  const tokenData = (await tokenRes.json().catch(() => ({}))) as { access_token?: string; error?: { code?: string; message?: string } }
+  const accessToken = tokenData.access_token
+  if (!accessToken) throw new Error(tokenData.error?.message || '己素 SSO 换 token 失败')
+  const meRes = await fetch(`${url}/api/me`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    signal: AbortSignal.timeout(15000),
+  })
+  const meData = (await meRes.json().catch(() => ({}))) as { user?: { id: string; nickname: string; avatar?: string; role?: string }; error?: { message?: string } }
+  const u = meData.user
+  if (!u || typeof u.id !== 'string') throw new Error(meData.error?.message || '己素 SSO 取用户信息失败')
+  return { id: u.id, username: u.nickname || `user-${u.id}`, nickname: u.nickname || `user-${u.id}`, role: u.role || '' }
 }
 
 // ============================================================
@@ -302,9 +318,9 @@ export const UPLOAD_RATE_LIMIT = (() => {
 
 export function isSsoConfigured(): boolean {
   try {
-    normalizeNoteProUrl(process.env.NOTE_PRO_URL || '')
+    ssoCfg()
+    return true
   } catch {
     return false
   }
-  return !!process.env.SSO_SECRET
 }

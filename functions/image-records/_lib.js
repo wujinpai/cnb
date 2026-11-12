@@ -59,7 +59,7 @@ async function verifyAuthToken(token, env) {
 
     const data = JSON.parse(b64urlDecode(payload))
     if (typeof data.exp !== 'number' || data.exp <= Date.now()) return false
-    // 图床仅限 NotePro 管理员：非管理员（含旧版无 role 的 token）一律拒绝
+    // 图床仅限己素 SSO 管理员：非管理员（含旧版无 role 的 token）一律拒绝
     return data.role === 'admin'
   } catch {
     return false
